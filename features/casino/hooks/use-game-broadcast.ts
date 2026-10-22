@@ -17,7 +17,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { useQuery } from "@tanstack/react-query";
-import { track } from "@/lib/analytics/mixpanel";
 import {
   applyForCreator,
   canBroadcast,
@@ -317,13 +316,8 @@ export function useGameBroadcast(
   const applyForCreatorRole = useCallback(async () => {
     setApplying(true);
     setLocalError(null);
-    // The application is one press: started and submitted are the same moment
-    // here, and both are sent so the funnel reads the same as it will when
-    // the form grows steps.
-    track("creator_application_started");
     try {
       await applyForCreator(target?.creatorApplicationNote ?? "");
-      track("creator_application_submitted");
     } catch (caught) {
       setLocalError(messageOf(caught, "Could not send the creator application."));
       throw caught;

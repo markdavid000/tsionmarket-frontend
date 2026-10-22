@@ -5,9 +5,6 @@ import { useTranslations } from "next-intl";
 import { KycField } from "@/features/funds/components/kyc/kyc-field";
 import { useKycSubmit } from "@/features/funds/hooks/use-pouch-kyc";
 import { friendlyError } from "@/lib/errors";
-import { MASK_ATTRIBUTE, NO_AUTOCAPTURE_CLASS, tagClaritySession } from "@/lib/analytics/clarity";
-import { setSuper, track } from "@/lib/analytics/mixpanel";
-import { AUTH_FAILURE, reasonFor } from "@/lib/analytics/failure-reason";
 import {
   buildKycDocuments,
   isFormSubmittable,
@@ -28,16 +25,6 @@ interface KycFormProps {
   // Starts a fresh pass (email OTP, then this form again). Offered when the
   // provider reports the name not matching the identity records.
   onRevalidate?: () => void;
-}
-
-// Which identity document a submission used, read from the field keys alone.
-// Returns null when it is neither, so an unrecognised form reports no type
-// rather than guessing one.
-function documentKind(keys: string[]): "nin" | "bvn" | null {
-  const upper = keys.map((key) => key.toUpperCase());
-  if (upper.some((key) => key.includes("NIN"))) return "nin";
-  if (upper.some((key) => key.includes("BVN"))) return "bvn";
-  return null;
 }
 
 // The dynamic KYC form. It renders whatever fields Pouch asked for and submits
@@ -95,36 +82,12 @@ export function KycForm({
     if (!ready) return;
     try {
       const documents = buildKycDocuments(fields, effective);
-      // Which kind of document was used, derived from the field keys. The
-      // value behind it never leaves this function: a NIN or BVN is NDPR
-      // crown-jewel data and must never reach an analytics property.
-      const kycType = documentKind(Object.keys(documents));
-      if (kycType) track("kyc_started", { kyc_type: kycType });
-
       const result = await submit.mutateAsync({ token, countryCode, documents });
-
-      // "approved" is the only outcome that is a pass. Pending is still in
-      // review, so it is neither completed nor failed yet.
-      if (result.state === "approved") {
-        track("kyc_completed");
-        // Later events carry the new status, so a funnel can be split by it.
-        setSuper({ kyc_status: "verified" });
-        void tagClaritySession({ kyc_status: "verified" });
-      } else if (result.state === "pending") {
-        setSuper({ kyc_status: "pending" });
-        void tagClaritySession({ kyc_status: "pending" });
-      } else if (result.state === "rejected") {
-        // The provider does not say why it refused, only that it did.
-        track("kyc_failed", { reason: "unknown", reason_detail: "rejected" });
-      }
       onSubmitted(result.state, result.message);
-    } catch (error) {
-      // A coded reason, never the provider's raw text: that can quote back the
-      // value the user typed.
-      // The stage is the fallback detail; a classified error carries its own
-      // code and overrides it.
-      track("kyc_failed", { reason_detail: "submit_error", ...reasonFor(AUTH_FAILURE, error) });
-      // Surfaced below via submit.error.
+    } catch {
+      // The mutation holds the error and it is surfaced below via
+      // submit.error; catching here only keeps the rejection from escaping
+      // the click handler.
     }
   };
 
@@ -135,11 +98,7 @@ export function KycForm({
         {t("detailsSubtitle")}
       </p>
 
-      {/* Masked as a whole rather than field by field: everything inside is
-          identity-document data (NIN, BVN, date of birth), a session replay of
-          it would be the same breach as sending it, and masking the container
-          covers any field added here later. */}
-      <div className={`mt-4 space-y-3.5 ${NO_AUTOCAPTURE_CLASS}`} {...MASK_ATTRIBUTE}>
+      <div className="mt-4 space-y-3.5">
         {fields.map((field) => {
           const raw = effective[field.key] ?? "";
           const show = attempted || touched[field.key];

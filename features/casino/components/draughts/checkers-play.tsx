@@ -67,8 +67,6 @@ import type {
   DraughtsMatch,
   DraughtsPlayerRating,
 } from "@/features/casino/lib/draughts/types";
-import { computerGamePayout, gamePayout } from "@/lib/analytics/game-result";
-import { track } from "@/lib/analytics/mixpanel";
 import { copyText } from "@/lib/clipboard";
 import { friendlyError } from "@/lib/errors";
 import { toast } from "@/lib/toast";
@@ -305,9 +303,8 @@ export function CheckersPlay({ matchId }: { matchId: string }) {
   const { match, loading, error, now, live, refresh, apply } = useDraughtsMatch(matchId);
   const { seat, myTurn, spectating } = useSeat(match, wallet);
   // Shine: a win or a draw posts itself to Market Square, keyed on match.id.
-  // The hook keeps its own "was I here when it ended" flag rather than
-  // borrowing `reportedResult` below, which fires for a settled match opened
-  // cold — harmless for an analytics event, a published backlog for a post.
+  // The hook keeps its own "was I here when it ended" flag, so a settled match
+  // opened cold does not publish a backlog of posts.
   useDraughtsShine(match, seat);
   const cashier = useChessCashierStatus();
   const joinStake = match?.wager?.stakeUsdc ?? null;
@@ -338,37 +335,6 @@ export function CheckersPlay({ matchId }: { matchId: string }) {
       match.result.kind === "draw" ? "draw" : match.result.winner === seat ? "win" : "loss";
     playGameEndSound(outcome);
   }, [match?.id, match?.result, match?.state, seat]);
-
-  const reportedResult = useRef<string | null>(null);
-  useEffect(() => {
-    if (!match?.result || !seat) return;
-    if (match.state !== "settled" && match.state !== "cancelled") return;
-    if (reportedResult.current === match.id) return;
-    reportedResult.current = match.id;
-    const outcome =
-      match.result.kind === "draw" ? "draw" : match.result.winner === seat ? "win" : "loss";
-    const reason =
-      match.result.kind === "draw"
-        ? ("draw" as const)
-        : match.result.reason === "resignation"
-          ? ("resign" as const)
-          : match.result.reason === "timeout"
-            ? ("timeout" as const)
-            : match.result.reason === "abandoned"
-              ? ("abandoned" as const)
-              : ("no_moves" as const);
-    const payout = match.computer?.wager
-      ? computerGamePayout(match.computer.wager, outcome)
-      : gamePayout(match.wager?.stakeUsdc, outcome, match.wager?.feeBps ?? 500);
-    track("game_result", {
-      game: "checkers",
-      result: outcome,
-      reason,
-      ...payout,
-      amount_usd: payout.payout_usd,
-      game_id: match.id,
-    });
-  }, [seat, match?.id, match?.state, match?.result, match?.wager, match?.computer?.wager]);
 
   const [busy, setBusy] = useState(false);
   const [panelTab, setPanelTab] = useState<PanelTab>("game");

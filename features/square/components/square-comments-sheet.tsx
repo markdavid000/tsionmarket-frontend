@@ -14,7 +14,6 @@ import {
   patchCommentIn,
   threadOf,
 } from "@/lib/square/comment-thread";
-import { track } from "@/lib/analytics/mixpanel";
 import {
   addPostComment,
   fetchCommentReplies,
@@ -123,13 +122,11 @@ function AuthorLink({ username, children }: { username: string; children: React.
 
 function CommentBox({
   postId,
-  authorId,
   replyTo,
   onCancelReply,
   onPosted,
 }: {
   postId: string;
-  authorId?: string;
   replyTo: ReplyTarget | null;
   onCancelReply: () => void;
   onPosted: (comment: MarketSquareComment, parentId: string | null) => void;
@@ -144,9 +141,6 @@ function CommentBox({
   const add = useMutation({
     mutationFn: (body: string) => addPostComment(postId, body, replyTo?.parentId),
     onSuccess: (comment) => {
-      // A reply is a comment on the same post, so both report the one event:
-      // the catalog counts comments on a post, not threads within them.
-      track("post_commented", { post_id: postId, ...(authorId ? { author_id: authorId } : {}) });
       onPosted(comment, replyTo?.parentId ?? null);
       setText("");
       onCancelReply();
@@ -495,7 +489,6 @@ export function SquareCommentsSheet({
         </div>
         <CommentBox
           postId={post.id}
-          authorId={post.author?.id}
           replyTo={replyTo}
           onCancelReply={() => setReplyTo(null)}
           onPosted={onPosted}

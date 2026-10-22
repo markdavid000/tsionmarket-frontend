@@ -7,7 +7,6 @@ import { useEvmSendWithReceipt } from "@/hooks/use-evm-send";
 import { usePortfolio } from "@/hooks/use-portfolio";
 import { useSponsoredSolanaSend } from "@/hooks/use-sponsored-solana";
 import { formatReceived, receivedFromLogs, type ReceiptLog } from "@/lib/meme/delivery";
-import { swapTradeAmounts, type TradeAmounts } from "@/lib/analytics/trade-amounts";
 import { formatUsdcAtomic } from "@/lib/meme/format";
 import { memePortfolioKeys } from "@/lib/meme/portfolio";
 import { isSubmittedEvmOperationError } from "@/lib/trade/sponsor";
@@ -32,8 +31,6 @@ import {
   type SwapStatus,
 } from "@/lib/meme/api";
 import { SOLANA_CHAIN_ID, networkOf } from "@/lib/meme/chain";
-import { track } from "@/lib/analytics/mixpanel";
-import { reportTradeRecordingMismatch } from "@/lib/analytics/watchtower";
 import { reportShine, type EntryPrice } from "@/lib/shine";
 import { swapShineFacts } from "@/features/trade/lib/shine-trade";
 
@@ -47,12 +44,6 @@ import { swapShineFacts } from "@/features/trade/lib/shine-trade";
 
 export interface MemeTradeInput extends Omit<SwapRequest, "walletAddress"> {
   chainId: number;
-  /**
-   * Called once the swap has been sent and registered with the trade service,
-   * with its swap id. This is the moment an order exists, before any verdict
-   * on it; analytics reports `trade_submitted` from here.
-   */
-  onSubmitted?: (swapId: string) => void;
   /**
    * Which service's Shine decides whether this trade is posted.
    *
@@ -94,7 +85,7 @@ export interface MemePreviewInput extends SwapRequest {
 //  - `delivered`: the swap's own receipt proves the wallet was paid, but the
 //    service recorded FAILED/REVERTED or refused the registration (409). The
 //    money moved; the ledger has not caught up. The user is told exactly
-//    that, never "bought" or "sold", and the trade team is told too.
+//    that, never "bought" or "sold", and the console logs it.
 //  - `pending`: the status poll ran to its ceiling without a terminal state.
 //    Nothing is claimed either way; the swap stays in the transactions list.
 export type TradeOutcome = "confirmed" | "delivered" | "pending";
@@ -106,13 +97,6 @@ export interface TradeResult {
   outcome: TradeOutcome;
   swapId: string | null;
   requestId: string | null;
-  /**
-   * What the trade is worth and how many tokens moved, for analytics: the
-   * quote's exact input leg and the receipt's proof of what arrived. Null when
-   * the swap cannot be priced in USDC (a Solana quote states no amounts), in
-   * which case the caller prices it from its own quote.
-   */
-  amounts: TradeAmounts | null;
   /** The swap transaction's hash, when the chain returned one. */
   txHash: string | null;
 }
@@ -415,24 +399,14 @@ export function useMemeTrade() {
     [ensureLinked]
   );
 
-  // A delivered-but-unrecorded trade, told to everyone who needs to know: the
-  // console for whoever is debugging, analytics for the count, Watchtower for
-  // the trade team with the ids that find the swap. The user hears
+  // A delivered-but-unrecorded trade: the console says so for whoever is
+  // debugging, with the ids that find the swap. The user hears
   // "delivered, still being recorded", never "done".
   const settleAsDelivered = useCallback(
     (quote: PreparedSwap, hash: string | null, recorded: string, ref: string | null) => {
       console.warn(
         `[meme] swap ${quote.swapId} delivered on-chain (${hash ?? "no hash"}) but the trade service recorded ${recorded} (request ${ref ?? "none"})`
       );
-      track("trade_recording_mismatch", {
-        vertical: "memecoin",
-        asset: quote.sellToken.symbol ?? quote.sellToken.address,
-        swap_id: quote.swapId,
-        recorded,
-        request_id: ref ?? undefined,
-        tx_hash: hash ?? undefined,
-      });
-      reportTradeRecordingMismatch({ swapId: quote.swapId, requestId: ref, hash, recorded });
       setRequestId(ref);
       setPhase("delivered");
     },
@@ -445,7 +419,6 @@ export function useMemeTrade() {
   const tradeSolana = useCallback(
     async (
       body: SwapRequest,
-      onSubmitted: ((swapId: string) => void) | undefined,
       shine: { service: "memecoin" | "spot"; tokenSymbol: string | undefined }
     ): Promise<TradeResult> => {
       const runQuote = () => quoteWithProviderRetry((key) => quoteSolanaSwap(body, key));
@@ -491,7 +464,6 @@ export function useMemeTrade() {
       });
       await registerSolanaSubmission(quote.swapId, body.walletAddress, signature);
       setSettled({ txHash: signature, chainId: SOLANA_CHAIN_ID });
-      onSubmitted?.(quote.swapId);
 
       setPhase("confirming");
       const status = await awaitTerminalStatus(quote.swapId);
@@ -502,7 +474,6 @@ export function useMemeTrade() {
           outcome: "pending",
           swapId: quote.swapId,
           requestId: null,
-          amounts: null,
           txHash: signature,
         };
       }
@@ -528,7 +499,6 @@ export function useMemeTrade() {
           outcome: "confirmed",
           swapId: quote.swapId,
           requestId: null,
-          amounts: null,
           txHash: signature,
         };
       }
@@ -540,7 +510,6 @@ export function useMemeTrade() {
   const trade = useCallback(
     async ({
       chainId,
-      onSubmitted,
       shineService = "memecoin",
       tokenSymbol,
       ...input
@@ -548,7 +517,7 @@ export function useMemeTrade() {
       // A second press while one runs is the same action, not a new one, and
       // nothing is known about it yet.
       if (activeRef.current) {
-        return { outcome: "pending", swapId: null, requestId: null, amounts: null, txHash: null };
+        return { outcome: "pending", swapId: null, requestId: null, txHash: null };
       }
       const chainWallet = walletFor(chainId);
       if (!chainWallet) throw new Error("Sign in first.");
@@ -562,10 +531,13 @@ export function useMemeTrade() {
         if (chainId === SOLANA_CHAIN_ID) {
           // The Shine facts travel beside the request rather than inside it:
           // they are not part of the swap and must never reach the wire.
-          return await tradeSolana({ ...input, walletAddress: chainWallet }, onSubmitted, {
-            service: shineService,
-            tokenSymbol,
-          });
+          return await tradeSolana(
+            { ...input, walletAddress: chainWallet },
+            {
+              service: shineService,
+              tokenSymbol,
+            }
+          );
         }
         const wallet = chainWallet;
         const body: SwapRequest = { ...input, walletAddress: wallet };
@@ -662,16 +634,11 @@ export function useMemeTrade() {
           }
         }
 
-        // Every call has been sent and registered (or refused as already
-        // recorded): the order exists, whatever the service says about it next.
-        onSubmitted?.(quote.swapId);
-
         // The swap's receipt is in hand, and its own logs say what the wallet
         // was paid: proof of delivery with no balance read, while the
         // server's formal verification finishes in the background.
         const received = receivedFromLogs(receivedLogs, receivedToken, wallet as `0x${string}`);
         const delivered = received !== null && received > 0n;
-        const amounts = swapTradeAmounts(quote, delivered ? received : null);
         if (delivered) {
           setReceived({
             amount: formatReceived(received, quote.buyToken.decimals ?? 18),
@@ -694,7 +661,6 @@ export function useMemeTrade() {
             outcome: "delivered",
             swapId: quote.swapId,
             requestId: registrationRefused.requestId,
-            amounts,
             txHash: settledHash,
           };
         }
@@ -714,7 +680,6 @@ export function useMemeTrade() {
             outcome: "pending",
             swapId: quote.swapId,
             requestId: null,
-            amounts,
             txHash: settledHash,
           };
         }
@@ -730,7 +695,6 @@ export function useMemeTrade() {
             outcome: "confirmed",
             swapId: quote.swapId,
             requestId: null,
-            amounts,
             txHash: settledHash,
           };
         }
@@ -740,15 +704,13 @@ export function useMemeTrade() {
         // which is a recording fault, not a failed trade. Telling the user
         // their money did not move when it did is the one thing this screen
         // must never do; calling it confirmed when the service has not is
-        // the other. So: delivered, and the discrepancy goes to the trade
-        // team.
+        // the other. So: delivered, and the discrepancy goes to the console.
         if (delivered) {
           settleAsDelivered(quote, settledHash, status, null);
           return {
             outcome: "delivered",
             swapId: quote.swapId,
             requestId: null,
-            amounts,
             txHash: settledHash,
           };
         }

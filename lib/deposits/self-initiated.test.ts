@@ -6,7 +6,7 @@ import {
   normalizeHash,
   readSelfInitiated,
   recordSelfInitiated,
-} from "@/lib/analytics/self-initiated";
+} from "@/lib/deposits/self-initiated";
 
 describe("normalizeHash", () => {
   it("compares hashes case-insensitively, because the sources disagree on case", () => {

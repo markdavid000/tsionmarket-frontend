@@ -31,7 +31,6 @@ import {
 } from "react";
 import { usePathname } from "next/navigation";
 import { errorCode } from "@/lib/api/envelope";
-import { track } from "@/lib/analytics/mixpanel";
 import {
   createStream,
   endStream,
@@ -429,13 +428,6 @@ export function BroadcastSessionProvider({ children }: { children: React.ReactNo
         if (guest) await resolveSpeakerRequest(guest.streamId, guest.requestId, "leave");
       } else {
         setStream(await endStream(hosted.id));
-        track("stream_ended", {
-          stream_id: hosted.id,
-          // How long it was actually live, not how long the console was open.
-          ...(startedAt === null
-            ? {}
-            : { duration_seconds: Math.round((Date.now() - startedAt) / 1000) }),
-        });
       }
       finishLocally();
       setPhase("ended");
@@ -448,7 +440,7 @@ export function BroadcastSessionProvider({ children }: { children: React.ReactNo
     } finally {
       setBusy(false);
     }
-  }, [room, role, finishLocally, startedAt]);
+  }, [room, role, finishLocally]);
 
   // A reconnect that never lands has to end, and has to say so. Sixty seconds
   // is long enough for a tunnel and short enough that a stream does not sit
@@ -554,7 +546,6 @@ export function BroadcastSessionProvider({ children }: { children: React.ReactNo
         // to a screen share.
         await room.setCameraEnabled(true).catch(() => {});
         setStartedAt(Date.now());
-        track("stream_started", { stream_id: created.id });
         setPhase("live");
       } catch (caught) {
         room.stopTracks(capture);

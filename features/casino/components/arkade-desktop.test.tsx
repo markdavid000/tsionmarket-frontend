@@ -11,7 +11,6 @@ vi.mock("@/features/casino/components/campaign/arkade-campaign-banner", () => ({
   ArkadeCampaignBanner: () => <div data-testid="campaign-banner" />,
 }));
 
-vi.mock("@/lib/analytics/mixpanel", () => ({ track: vi.fn() }));
 // The head shows the wallet balance; the balance is not under test, so the hook
 // is stubbed to a settled, empty portfolio.
 vi.mock("@/hooks/use-portfolio", () => ({
@@ -37,11 +36,8 @@ vi.mock("@/hooks/use-shine", () => ({
   }),
 }));
 
-import { track } from "@/lib/analytics/mixpanel";
 import { ArkadeDesktop } from "@/features/casino/components/arkade-desktop";
 import { ArkadeDesktopRow } from "@/features/casino/components/arkade-desktop-row";
-
-const tracked = vi.mocked(track);
 
 // Copy the desktop Arkade needs that the catalogues do not carry yet. The
 // adoption PR adds these six keys to en, de, es, fr and pt; until then the
@@ -206,18 +202,14 @@ describe("ArkadeDesktopRow", () => {
     expect(screen.queryAllByRole("button")).toHaveLength(0);
   });
 
-  it("leaves game_opened to the route that owns the navigation", () => {
+  it("leaves the navigation to the route that owns it", () => {
     // The desktop rail is presentational: it hands the game back and the
-    // casino route fires the event beside its router push. Reporting from the
-    // shared card as well would double-count every desktop open, and the two
-    // surfaces would need two copies of the catalogue's id map.
-    tracked.mockClear();
+    // casino route pushes the router.
     const onSelectGame = vi.fn();
     renderWithIntl(<ArkadeDesktopRow games={[chess]} label="Row 1" onSelectGame={onSelectGame} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Play Chess" }));
     expect(onSelectGame).toHaveBeenCalledWith(chess);
-    expect(tracked).not.toHaveBeenCalled();
   });
 
   it("draws the rail with the shared desktop card, as buttons", () => {

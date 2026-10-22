@@ -42,7 +42,6 @@ import { TypeChip } from "@/features/portfolio/components/type-chip";
 import { displayNetworkIconKey, displayNetworkLabel } from "@/features/portfolio/lib/network-label";
 import { AssetIcon } from "@/components/ui/asset-icon";
 import { tokenBg } from "@/lib/trade/assets";
-import { track } from "@/lib/analytics/mixpanel";
 import { NetworkIcon } from "@/components/ui/network-icon";
 import { useMoney } from "@/components/ui/currency-select";
 import { SearchIcon, WalletIcon } from "@/components/ui/icons";
@@ -440,20 +439,7 @@ export function PortfolioView({
         <KashCard
           onBuy={() => setKashModal("buy")}
           onSend={() => setKashModal("send")}
-          onClaim={
-            kashWallet
-              ? () =>
-                  claimPoints.mutate(
-                    { wallet: kashWallet },
-                    {
-                      // Reported on settlement, so the figure is what the engine
-                      // actually minted rather than what was claimable.
-                      onSuccess: (result) =>
-                        track("kash_earned", { kash_amount: Number(result.kashMinted) }),
-                    }
-                  )
-              : undefined
-          }
+          onClaim={kashWallet ? () => claimPoints.mutate({ wallet: kashWallet }) : undefined}
           claiming={claimPoints.isPending}
           onConvert={() => setKashModal("convert")}
           onHistory={() => setKashModal("history")}

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import enMessages from "@/messages/en.json";
@@ -11,7 +11,6 @@ vi.mock("@/features/casino/components/campaign/arkade-campaign-banner", () => ({
   ArkadeCampaignBanner: () => <div data-testid="campaign-banner" />,
 }));
 
-vi.mock("@/lib/analytics/mixpanel", () => ({ track: vi.fn() }));
 // The surface reads the wallet balance for the header pill; the balance itself
 // is not under test, so the hook is stubbed to a settled, empty portfolio.
 vi.mock("@/hooks/use-portfolio", () => ({
@@ -37,10 +36,7 @@ vi.mock("@/hooks/use-shine", () => ({
   }),
 }));
 
-import { track } from "@/lib/analytics/mixpanel";
 import { ArkadeMobile } from "@/features/casino/components/arkade-mobile";
-
-const tracked = vi.mocked(track);
 
 function wrapper({ children }: { children: ReactNode }) {
   return (
@@ -106,16 +102,6 @@ const ayo: CasinoGame = {
   comingSoon: true,
 };
 
-// A game that is playable but has no agreed analytics id, which is the case
-// the catalogue's map is there to handle.
-const poker: CasinoGame = {
-  ...ayo,
-  id: "poker",
-  name: "Poker",
-  href: "/casino/poker",
-  comingSoon: false,
-};
-
 const sample = [chess, arkball, lastMan, ayo];
 
 describe("ArkadeMobile", () => {
@@ -125,8 +111,6 @@ describe("ArkadeMobile", () => {
     renderMobile(<ArkadeMobile games={sample} />);
     expect(screen.queryByTestId("campaign-banner")).toBeNull();
   });
-
-  beforeEach(() => tracked.mockClear());
 
   it("draws the featured banner ahead of the rails when nothing is filtered", () => {
     renderMobile(<ArkadeMobile games={sample} />);
@@ -191,27 +175,6 @@ describe("ArkadeMobile", () => {
     fireEvent.click(screen.getByRole("button", { name: enMessages.casino.hub.categoryCards }));
     // 101px tabs, 12px apart, so the third slot starts 226px along.
     expect(segment.style.transform).toBe("translateX(226px)");
-  });
-
-  it("reports game_opened with the catalogue's analytics id", () => {
-    renderMobile(<ArkadeMobile games={[chess, arkball, lastMan, poker]} />);
-
-    fireEvent.click(screen.getByRole("link", { name: "Play Chess" }));
-    expect(tracked).toHaveBeenCalledWith("game_opened", { game: "chess" });
-    // Exactly once. The card is shared with the desktop rail and reports nothing
-    // itself, so a second call would mean the event had been duplicated.
-    expect(tracked).toHaveBeenCalledTimes(1);
-
-    // ArkBall has an id of its own now, and reports under it.
-    tracked.mockClear();
-    fireEvent.click(screen.getByRole("link", { name: "Play ArkBall" }));
-    expect(tracked).toHaveBeenCalledWith("game_opened", { game: "arkball" });
-
-    // Poker has no agreed analytics id, so opening it reports nothing rather
-    // than inventing one.
-    tracked.mockClear();
-    fireEvent.click(screen.getByRole("link", { name: "Play Poker" }));
-    expect(tracked).not.toHaveBeenCalled();
   });
 
   it("does not make a control out of a game with nowhere to go", () => {

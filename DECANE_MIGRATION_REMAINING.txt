@@ -56,7 +56,6 @@ hooks/use-evm-send.test.ts
 hooks/use-evm-send.ts
 hooks/use-portfolio.test.tsx
 hooks/use-portfolio.ts
-lib/analytics/events.ts
 lib/api.ts
 lib/api/service.test.ts
 lib/api/service.ts

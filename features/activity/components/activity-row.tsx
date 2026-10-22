@@ -16,7 +16,6 @@ import {
   type ActivityEntry,
 } from "@/lib/activity/entries";
 import { encodeGameRef } from "@/lib/broadcast/deep-link";
-import { track } from "@/lib/analytics/mixpanel";
 import { tokenBg } from "@/lib/trade/assets";
 import { displayNetwork, displaySymbol } from "@/lib/buy";
 import { formatQty, truncateAddress } from "@/lib/format";
@@ -198,16 +197,6 @@ export function ActivityRow({ item, priceUsd }: { item: ActivityEntry; priceUsd:
       <a
         data-sensitive="other"
         href={explorer ? `${explorer}${item.hash}` : undefined}
-        onClick={() => {
-          if (explorer)
-            track("arktivity_tx_opened", {
-              tx_type: item.direction === "in" ? "receive" : "send",
-              asset: item.symbol,
-              network: item.network,
-              tx_hash: item.hash,
-              direction: item.direction,
-            });
-        }}
         target="_blank"
         rel="noopener noreferrer"
         title={fullTimestamp(item.timestamp)}
@@ -244,16 +233,7 @@ export function ActivityRow({ item, priceUsd }: { item: ActivityEntry; priceUsd:
           </div>
         </div>
       </a>
-      <ShareButton
-        label={title}
-        onClick={() => {
-          track("arkivity_tx_shared", {
-            tx_type: item.direction === "in" ? "receive" : "send",
-            tx_hash: item.hash,
-          });
-          setSharing(true);
-        }}
-      />
+      <ShareButton label={title} onClick={() => setSharing(true)} />
       {sharing ? <ShareToSquare draft={shareDraft} open onClose={() => setSharing(false)} /> : null}
     </div>
   );

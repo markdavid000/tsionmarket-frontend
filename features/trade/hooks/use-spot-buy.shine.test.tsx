@@ -82,7 +82,6 @@ vi.mock("@/features/trade/hooks/use-meme-trade", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/features/trade/hooks/use-meme-trade")>()),
   useMemeTrade: () => ({ phase: "idle", trade: memeTradeHook.trade }),
 }));
-vi.mock("@/lib/analytics/mixpanel", () => ({ track: vi.fn() }));
 vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => key }));
 vi.mock("@/lib/buy", () => ({
   routesForSymbol: () => [{ symbol: "LINK", destinationChainId: 8453 }],

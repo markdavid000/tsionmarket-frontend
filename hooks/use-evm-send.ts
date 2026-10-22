@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { useSocialWallet } from "decane-connect-kit";
 import type { EIP1193Provider, SignedAuthorization } from "viem";
-import { recordSelfInitiated } from "@/lib/analytics/self-initiated";
+import { recordSelfInitiated } from "@/lib/deposits/self-initiated";
 import { ensureUnlocked } from "@/lib/decane";
 import { sendSponsoredEvmCallsWithReceipt, type SignAuthorization } from "@/lib/trade/sponsor";
 import type { ReceiptLog } from "@/lib/meme/delivery";

@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useMutation } from "@tanstack/react-query";
-import { track } from "@/lib/analytics/mixpanel";
 import { setFollow } from "@/lib/api/market-square";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/format";
@@ -156,7 +155,7 @@ export function SquareFeedPostCard({
   const t = useTranslations("square");
   const engage = useSquareEngage();
   const [commenting, setCommenting] = useState(false);
-  const seenRef = useRecordView(post.id, post.author?.id);
+  const seenRef = useRecordView(post.id);
   const author = post.author;
   const isMe = meId !== undefined && author?.id === meId;
   const href = squareLinks.post(post.id);
@@ -175,13 +174,6 @@ export function SquareFeedPostCard({
     onMutate: (next) => {
       const previous = following;
       setFollowing(next);
-      // `source` is where the button was pressed, which is what says which
-      // surface actually grows the graph.
-      const targetId = author?.id ?? "";
-      if (targetId) {
-        if (next) track("user_followed", { target_user_id: targetId, source: "feed_post" });
-        else track("user_unfollowed", { target_user_id: targetId });
-      }
       return { previous };
     },
     onError: (_error, _next, context) => setFollowing(context?.previous ?? false),
@@ -373,7 +365,6 @@ export function SquareFeedPostCard({
                   postId: post.id,
                   action: "repost",
                   on: !post.repostedByMe,
-                  authorId: post.author?.id,
                 })
               }
             >
@@ -390,7 +381,6 @@ export function SquareFeedPostCard({
                   postId: post.id,
                   action: "like",
                   on: !post.likedByMe,
-                  authorId: post.author?.id,
                 })
               }
             >

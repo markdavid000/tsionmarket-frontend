@@ -16,7 +16,7 @@ import {
 } from "@privy-io/react-auth";
 import { useSignTransaction, useWallets as useSolanaWallets } from "@privy-io/react-auth/solana";
 import type { EIP1193Provider } from "viem";
-import { recordSelfInitiated } from "@/lib/analytics/self-initiated";
+import { recordSelfInitiated } from "@/lib/deposits/self-initiated";
 import { sendSponsoredEvmCalls } from "@/lib/trade/sponsor";
 import { canSponsorEvmChainId } from "@/lib/trade/sponsored-evm";
 import {

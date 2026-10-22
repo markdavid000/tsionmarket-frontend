@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { MethodTile } from "@/features/funds/components/method-tile";
 import { CryptoDepositScreen } from "@/features/funds/components/crypto-deposit-screen";
 import { BankTransferScreen } from "@/features/funds/components/bank-transfer-screen";
-import { track } from "@/lib/analytics/mixpanel";
 import { AssetIcon } from "@/components/ui/asset-icon";
 import { ArrowRightIcon, BankIcon } from "@/components/ui/icons";
 import type { DepositPrefill } from "@/lib/voice/intent";
@@ -30,16 +29,7 @@ export function FundsModal({
   const [step, setStep] = useState<Step>(deposit ? "crypto" : "chooser");
   const back = () => setStep("chooser");
 
-  // The modal opening is the top of the funding funnel, so it is reported once
-  // per open rather than on every step change within it.
-  useEffect(() => {
-    track("add_funds_opened");
-  }, []);
-
-  // A step change is the method choice. Going back to the chooser is not a
-  // selection, so only the two funding steps report one.
   const chooseMethod = (method: "crypto" | "bank") => {
-    track("fund_method_selected", { method });
     setStep(method);
   };
 

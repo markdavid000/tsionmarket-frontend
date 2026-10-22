@@ -188,8 +188,8 @@ vi.mock("@/components/ui/currency-select", () => ({
   }),
 }));
 
-// Web Audio, confetti and the analytics transport have no place in jsdom, and
-// none of them is what this file is about.
+// Web Audio and confetti have no place in jsdom, and neither is what this file
+// is about.
 vi.mock("@/features/casino/lib/last-standing/music", () => ({
   isMusicPlaying: () => false,
   setUrgentMode: () => {},
@@ -208,7 +208,6 @@ vi.mock("@/features/casino/lib/last-standing/sound", () => ({
   setSoundEnabled: () => {},
 }));
 vi.mock("canvas-confetti", () => ({ default: () => {} }));
-vi.mock("@/lib/analytics/mixpanel", () => ({ track: () => {} }));
 vi.mock("@/lib/toast", () => ({
   toast: {
     loading: () => "toast",

@@ -33,9 +33,6 @@ import {
   sendArkjetCommand,
   subscribeArkjetTopics,
 } from "@/features/casino/lib/arkjet/live-socket";
-import { track } from "@/lib/analytics/mixpanel";
-import { GAME_FAILURE, reasonFor } from "@/lib/analytics/failure-reason";
-import { arkjetPlacedProps, arkjetSettledEvent } from "@/features/casino/lib/arkjet-analytics";
 import { arkjetShineEvent } from "@/features/casino/lib/shine/arcade";
 import { reportShine } from "@/lib/shine";
 import { useSignInPrompt } from "@/hooks/use-require-session";
@@ -59,6 +56,18 @@ const READ_OPTIONS = {
   refetchOnReconnect: false,
   refetchIntervalInBackground: false,
 } as const;
+
+function isSettled(bet: ArkjetBet): boolean {
+  if (bet.status === "LOST") return true;
+  if (bet.status !== "CASHED_OUT") return false;
+  const multiplier = bet.cashoutMultiplier;
+  return (
+    multiplier !== null &&
+    multiplier !== undefined &&
+    multiplier !== "" &&
+    Number.isFinite(Number(multiplier))
+  );
+}
 
 export function useArkjet() {
   const { ready, authenticated, evmAddress } = useAuthSession();
@@ -157,25 +166,22 @@ export function useArkjet() {
     }
   }, [current.data, hasSession, queryClient]);
 
-  // Bets already reported as settled. Every update to a bet comes through
-  // applyBet, including the socket push that settles it, and the same
-  // settlement can arrive more than once.
+  // Bets already seen settled. Every update to a bet comes through applyBet,
+  // including the socket push that settles it, and the same settlement can
+  // arrive more than once.
   const settledBets = useRef(new Set<string>());
 
   const applyBet = useCallback(
     (bet: ArkjetBet) => {
-      // Reported here rather than in the cash-out mutation: a ticket set to
+      // Handled here rather than in the cash-out mutation: a ticket set to
       // leave on its own, and every loss, is settled by the round and never
-      // passes through a mutation at all.
-      if (!settledBets.current.has(bet.betId)) {
-        const round = queryClient.getQueryData<ArkjetRound>(ARKJET_KEYS.current);
-        const settled = arkjetSettledEvent(bet, round?.crashMultiplier);
-        if (settled) {
-          settledBets.current.add(bet.betId);
-          if (settled.name === "arkjet_cashed_out") track("arkjet_cashed_out", settled.props);
-          else track("arkjet_round_lost", settled.props);
-          void queryClient.invalidateQueries({ queryKey: ARKADE_CAMPAIGN_QUERY_KEY });
-        }
+      // passes through a mutation at all. A settled ticket can move the
+      // campaign standings, so they are refreshed once per settlement. A
+      // cash-out only counts once it carries its multiplier: an update without
+      // one is not the final word on that ticket.
+      if (!settledBets.current.has(bet.betId) && isSettled(bet)) {
+        settledBets.current.add(bet.betId);
+        void queryClient.invalidateQueries({ queryKey: ARKADE_CAMPAIGN_QUERY_KEY });
       }
       void queryClient.cancelQueries({ queryKey: ARKJET_KEYS.bets });
       queryClient.setQueryData<ArkjetBetList>(
@@ -341,16 +347,6 @@ export function useArkjet() {
       ),
     onSuccess: (bet) => {
       applyBet(bet);
-      // Only a ticket the round took. A rejected one comes back with another
-      // status and is reported by onError below.
-      if (bet.status === "ACCEPTED") track("arkjet_ticket_placed", arkjetPlacedProps(bet));
-    },
-    onError: (error, input) => {
-      track("arkjet_ticket_failed", {
-        round_id: input.roundId,
-        ...(Number.isFinite(Number(input.amount)) ? { amount_usd: Number(input.amount) } : {}),
-        ...reasonFor(GAME_FAILURE, error),
-      });
     },
   });
   const cancel = useMutation({

@@ -3,8 +3,7 @@ import { NextRequest } from "next/server";
 import { GET } from "./route";
 
 // A referral link sends the visitor on to sign-in. Whatever campaign tags the
-// link carried have to survive that hop: Mixpanel reads them off the page the
-// visitor lands on, and a link that drops them shows up as "direct".
+// link carried have to survive that hop.
 
 function open(url: string, username: string) {
   return GET(new NextRequest(new URL(url)), { params: Promise.resolve({ username }) });

@@ -74,8 +74,6 @@ vi.mock("@/hooks/use-sponsored-solana", () => ({ useSponsoredSolanaSend: () => s
 vi.mock("@/hooks/use-portfolio", () => ({
   usePortfolio: () => ({ applyReceipt: chain.applyReceipt }),
 }));
-vi.mock("@/lib/analytics/mixpanel", () => ({ track: vi.fn() }));
-vi.mock("@/lib/analytics/watchtower", () => ({ reportTradeRecordingMismatch: vi.fn() }));
 vi.mock("@/lib/meme/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/meme/api")>();
   return { ...actual, ...api };

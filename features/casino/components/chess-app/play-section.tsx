@@ -66,8 +66,6 @@ import {
   type Square,
 } from "@/features/casino/lib/chess/engine";
 import { friendlyError, isConflictError } from "@/lib/errors";
-import { track } from "@/lib/analytics/mixpanel";
-import { computerGamePayout, gamePayout } from "@/lib/analytics/game-result";
 import { hasPositiveUsdc, wagerBreakdown } from "@/features/casino/lib/api/cashier";
 import { copyText } from "@/lib/clipboard";
 import { toast } from "@/lib/toast";
@@ -78,9 +76,7 @@ import type {
   ChessMatchComment,
   ChessCoachMoveReview,
   ChessComputerCoachSummary,
-  ChessResult,
 } from "@/features/casino/lib/api/types";
-import type { ChessEndReason } from "@/lib/analytics/events";
 import type { ChessMoveWire } from "@/features/casino/lib/api/chess-wire";
 import {
   RoundDialogPlayer,
@@ -95,7 +91,6 @@ import {
 import { RoundChatFeed } from "@/features/casino/components/chess/round/round-chat";
 import { RoundBoardMenu } from "@/features/casino/components/chess/round/round-board-menu";
 import { shareOrigin } from "@/lib/site-url";
-import { useChessStartReport } from "@/features/casino/hooks/use-chess-start-report";
 import { useShareLink } from "@/hooks/use-share-link";
 
 const LiveVideoPlayer = dynamic(
@@ -311,16 +306,6 @@ const EMPTY_TAKEBACK = { white: false, black: false, takebackable: false } as co
 const EMPTY_REMATCH = { offeredBy: null, nextMatchId: null } as const;
 
 type PromotionOption = "q" | "r" | "b" | "n";
-// How a finished game ended, in the catalog's words. A draw says why it was a
-// draw, and the catalog names two of those causes; the rest are agreements in
-// all but name, since neither side could force a win.
-function chessEndReason(result: ChessResult): ChessEndReason {
-  if (result.kind === "checkmate") return "checkmate";
-  if (result.kind === "resignation") return "resign";
-  if (result.kind === "timeout") return "timeout";
-  return result.reason === "stalemate" ? "stalemate" : "draw_agreed";
-}
-
 type MobileRoundPanel = "moves" | "chat" | "info" | null;
 
 const ROUND_DESKTOP_BREAKPOINT = 900;
@@ -786,9 +771,6 @@ export function PlaySection({
     extendingTime,
     claimingTimeout,
   } = useChessMatch(matchId, seatName);
-  // The start, for whichever seat this player holds. See the hook for why it
-  // is reported here rather than where a challenge is accepted.
-  useChessStartReport(match, you);
   // Shine: a win or a draw here posts itself to Market Square. `you` is null
   // for a spectator, and the id is the match id, which is the same id the
   // lichess round controller reports — the second of the two is a no-op.
@@ -965,25 +947,6 @@ export function PlaySection({
     if (!sawInProgress.current || !result) return;
     const outcome = result.kind === "draw" ? "draw" : result.winner === you ? "win" : "loss";
     playGameEndSound(outcome);
-    // Same guards the sound uses: reported once, and only for someone who
-    // watched the game finish rather than opening a settled one.
-    if (you) {
-      const payout = match.computer?.wager
-        ? computerGamePayout(match.computer.wager, outcome)
-        : gamePayout(match.stakeUsdc, outcome, match.wagerFeeBps ?? CHESS_FEE_BPS);
-      track("chess_game_ended", {
-        game_id: match.id,
-        result: outcome,
-        end_reason: chessEndReason(result),
-        // The stake this game was played for, and what the settlement paid the
-        // player. `house_usd` is the platform's cut, reported rather than left
-        // to be derived from a fee rate that has changed before.
-        amount_usd: payout.stake_usd,
-        payout_usd: payout.payout_usd,
-        house_usd: payout.fee_usd,
-        moves: match.moves.length,
-      });
-    }
   }, [inProgress, match, queryClient, result, terminal, wallet.address, you]);
 
   useEffect(() => {

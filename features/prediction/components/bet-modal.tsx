@@ -10,8 +10,6 @@ import { predictionShineEvent } from "@/features/prediction/lib/shine";
 import { predictionPayout } from "@/lib/format";
 import { reportShine } from "@/lib/shine";
 import { toast } from "@/lib/toast";
-import { track } from "@/lib/analytics/mixpanel";
-import { PREDICTION_FAILURE, reasonFor } from "@/lib/analytics/failure-reason";
 import type { Prediction } from "@/lib/types";
 import { isValidPredictionStake, PREDICTION_MIN_STAKE_USD } from "@/features/prediction/lib/stake";
 
@@ -93,35 +91,6 @@ export function PredictionBetForm({
   const submit = async () => {
     if (!tokenId || !validAmount) return;
     const toastId = toast.loading(t("placingBet"));
-    // A direct Polymarket bet is a slip of one. Reported in the slip's shape
-    // so single bets and combos count in the same series; the market itself is
-    // named by the prediction_selection_added that precedes it.
-    // The label reads like "62¢"; a share paying $1 at that price is worth
-    // 100/cents, which is the decimal odds the catalog asks for.
-    const cents = Number(priceCents.replace(/[^0-9.]/gu, ""));
-    const odds = cents > 0 ? Math.round((100 / cents) * 1e4) / 1e4 : undefined;
-    const legs = {
-      leg_count: 1,
-      stake_usd: amountUsd,
-      ...(odds !== undefined
-        ? {
-            combined_odds: odds,
-            potential_payout_usd: Math.round(amountUsd * odds * 100) / 100,
-          }
-        : {}),
-    };
-    track("prediction_selection_added", {
-      // This modal trades the curated Polymarket set; the user-created markets
-      // have their own flow.
-      market_id: prediction?.conditionId ?? tokenId,
-      outcome: side,
-      ...(odds !== undefined ? { odds } : {}),
-      slip_size: 1,
-    });
-    track("prediction_slip_submitted", {
-      ...legs,
-      market_ids: prediction?.conditionId ?? tokenId,
-    });
     try {
       const fill = await placeBet({ tokenId, amountUsd });
       // A fill-and-kill order that came back ok matched rather than rested, so
@@ -141,7 +110,6 @@ export function PredictionBetForm({
         takingAmount: fill.takingAmount,
       });
       if (shineEvent) reportShine(shineEvent);
-      track("prediction_bet_placed", legs);
       toast.success(
         side === "yes"
           ? t("betPlacedYes", { amount: money.formatExact(amountUsd) })
@@ -150,8 +118,7 @@ export function PredictionBetForm({
       );
       onPlaced?.();
       onClose();
-    } catch (error) {
-      track("prediction_bet_failed", { ...legs, ...reasonFor(PREDICTION_FAILURE, error) });
+    } catch {
       // Error is surfaced inline below; keep the modal open to retry.
       toast.error(t("betFailed"), { id: toastId });
     }
