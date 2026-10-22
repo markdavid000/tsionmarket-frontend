@@ -88,10 +88,6 @@ vi.mock("@/components/ui/currency-select", () => ({
   useMoney: () => ({ format: (usd: number) => `$${usd}` }),
 }));
 vi.mock("@/components/share/share-to-square", () => ({ ShareToSquare: () => null }));
-vi.mock("@/features/trade/components/spot-mode", () => ({
-  useSpotMode: () => ({ mode: "simple" }),
-}));
-vi.mock("@/lib/analytics/mixpanel", () => ({ track: vi.fn() }));
 vi.mock("@/lib/toast", () => ({
   toast: { loading: vi.fn(() => "t1"), success: vi.fn(), error: vi.fn(), dismiss: vi.fn() },
 }));

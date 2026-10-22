@@ -4,7 +4,7 @@ import {
   depositCandidateIds,
   newDepositArrivals,
   rememberArrivals,
-} from "@/lib/analytics/deposit-watch";
+} from "@/lib/deposits/deposit-watch";
 import type { ActivityItem } from "@/lib/server/activity";
 
 function item(over: Partial<ActivityItem>): ActivityItem {
@@ -23,13 +23,13 @@ function item(over: Partial<ActivityItem>): ActivityItem {
 }
 
 describe("newDepositArrivals", () => {
-  it("reports an inbound stablecoin transfer as a deposit", () => {
+  it("treats an inbound stablecoin transfer as a deposit", () => {
     expect(newDepositArrivals([item({})], new Set())).toEqual([
       {
         id: "0xabc:log:1",
         hash: item({}).hash,
         network: "base-mainnet",
-        // The stablecoin that landed. deposit_completed reports it as `asset`.
+        // The stablecoin that landed.
         asset: "USDC",
         amountUsd: 25,
         timestamp: item({}).timestamp,
@@ -37,7 +37,7 @@ describe("newDepositArrivals", () => {
     ]);
   });
 
-  it("ignores anything already reported, so reopening the app is silent", () => {
+  it("ignores anything already handled, so reopening the app is silent", () => {
     expect(newDepositArrivals([item({})], new Set(["0xabc:log:1"]))).toEqual([]);
   });
 
@@ -46,8 +46,8 @@ describe("newDepositArrivals", () => {
   });
 
   it("ignores tokens whose amount is not their dollar value", () => {
-    // Reporting amount_usd from an ETH amount would overstate a deposit by
-    // three orders of magnitude.
+    // Taking an ETH amount as dollars would overstate a deposit by three
+    // orders of magnitude.
     expect(newDepositArrivals([item({ symbol: "ETH", amount: 0.01 })], new Set())).toEqual([]);
   });
 
@@ -77,7 +77,7 @@ describe("newDepositArrivals", () => {
 });
 
 describe("newDepositArrivals, transfers the app caused", () => {
-  // These are the flows that were being reported as deposits: the money lands
+  // These are the flows that look like deposits: the money lands
   // as inbound USDC exactly like a deposit does, and only the fact that we sent
   // the transaction tells them apart.
   it("ignores an arrival from a transaction the app sent", () => {
@@ -90,7 +90,7 @@ describe("newDepositArrivals, transfers the app caused", () => {
     expect(arrivals).toEqual([]);
   });
 
-  it("still reports a real deposit, which carries a hash we never sent", () => {
+  it("still finds a real deposit, which carries a hash we never sent", () => {
     const arrivals = newDepositArrivals(
       [item({ hash: "0xexternal" })],
       new Set(),
@@ -110,7 +110,7 @@ describe("newDepositArrivals, transfers the app caused", () => {
 });
 
 describe("depositCandidateIds", () => {
-  it("covers every inbound stablecoin transfer, reported or ruled out", () => {
+  it("covers every inbound stablecoin transfer, handled or ruled out", () => {
     // The caller remembers these so a ruled-out transfer is not reconsidered
     // later, once its hash has aged out of the self-initiated record.
     const ids = depositCandidateIds([
@@ -124,7 +124,7 @@ describe("depositCandidateIds", () => {
 });
 
 describe("rememberArrivals", () => {
-  it("adds the newly reported ids", () => {
+  it("adds the newly handled ids", () => {
     expect(rememberArrivals(new Set(["a"]), ["b"])).toEqual(["a", "b"]);
   });
 

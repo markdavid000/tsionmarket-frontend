@@ -6,13 +6,12 @@ import {
   depositCandidateIds,
   newDepositArrivals,
   rememberArrivals,
-} from "@/lib/analytics/deposit-watch";
-import { readSelfInitiated } from "@/lib/analytics/self-initiated";
+} from "@/lib/deposits/deposit-watch";
+import { readSelfInitiated } from "@/lib/deposits/self-initiated";
 import type { ActivityItem } from "@/lib/server/activity";
 
-// Its own remembered-set, separate from the analytics one: the two answer
-// different questions (has this been reported / has the balance accounted for
-// it) and must not consume each other's arrivals.
+// The arrivals the balance has already accounted for, remembered on this
+// device so a reload does not refresh for them again.
 const STORAGE_KEY = "wsws.balance.deposit-seen.v1";
 
 function readSeen(): Set<string> {
@@ -46,7 +45,7 @@ function writeSeen(ids: string[]): void {
  * money arriving from outside the app — a crypto or bank deposit landing at the
  * static address while the app is closed — would otherwise not show until the
  * next in-app transaction. A settled deposit surfaces as an inbound stablecoin
- * transfer in activity (lib/analytics/deposit-watch.ts); that is the signal used
+ * transfer in activity (lib/deposits/deposit-watch.ts); that is the signal used
  * here to refresh the network it landed on, exactly once per arrival.
  *
  * The first run on a device records what is already there without refreshing:
@@ -64,7 +63,7 @@ export function useDepositBalanceRefresh(items: ActivityItem[], wallet: string):
 
     const seen = readSeen();
     // Transfers the app itself caused are not deposits, however much they look
-    // like one once the money lands. See lib/analytics/self-initiated.
+    // like one once the money lands. See lib/deposits/self-initiated.
     const arrivals = newDepositArrivals(items, seen, readSelfInitiated());
     const considered = depositCandidateIds(items).filter((id) => !seen.has(id));
     if (considered.length === 0) return;

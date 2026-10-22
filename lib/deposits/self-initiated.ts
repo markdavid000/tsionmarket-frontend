@@ -12,6 +12,8 @@
 // only exact way to tell the two apart, so this is deliberately a record of
 // fact rather than a guess at amounts and timing.
 
+// The name predates this module's move out of lib/analytics. Kept as is so
+// devices that already hold a record keep it.
 const STORAGE_KEY = "wsws.analytics.self-initiated.v1";
 
 // Comfortably more than a busy user's transactions between two visits to the
@@ -53,7 +55,7 @@ export function readSelfInitiated(): Set<string> {
       : new Set();
   } catch {
     // A corrupt or unavailable store must not stop the app. The cost of an
-    // empty set is that one visit could report a self-caused arrival as a
+    // empty set is that one visit could treat a self-caused arrival as a
     // deposit, which is why the writes below are best effort but eager.
     return new Set();
   }

@@ -6,11 +6,9 @@ import type { ShineEvent } from "@/lib/shine/types";
 const mocks = vi.hoisted(() => ({
   placeBet: vi.fn(),
   reportShine: vi.fn(),
-  track: vi.fn(),
 }));
 
 vi.mock("@/lib/shine", () => ({ reportShine: mocks.reportShine }));
-vi.mock("@/lib/analytics/mixpanel", () => ({ track: mocks.track }));
 vi.mock("@/lib/toast", () => ({
   toast: { loading: () => "toast-1", success: vi.fn(), error: vi.fn() },
 }));
@@ -89,16 +87,6 @@ describe("what a filled prediction order reports to Shine", () => {
     const event = mocks.reportShine.mock.calls[0][0] as ShineEvent;
     expect(JSON.stringify(event)).not.toContain("0xcondition");
     expect(event).toMatchObject({ id: "0xorder", outcome: "No" });
-    // Analytics keeps its own identifier, and that is not this one: the
-    // selection names the market, and the placed bet reports the slip.
-    expect(mocks.track).toHaveBeenCalledWith(
-      "prediction_selection_added",
-      expect.objectContaining({ market_id: "0xcondition" })
-    );
-    expect(mocks.track).toHaveBeenCalledWith(
-      "prediction_bet_placed",
-      expect.objectContaining({ leg_count: 1 })
-    );
   });
 
   it("reports nothing when the order was not accepted", async () => {

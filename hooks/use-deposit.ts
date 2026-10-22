@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
-import { recordSelfInitiated } from "@/lib/analytics/self-initiated";
+import { recordSelfInitiated } from "@/lib/deposits/self-initiated";
 import { toast } from "@/lib/toast";
 import {
   TERMINAL_STAGES,
@@ -585,7 +585,7 @@ export function useValidateAddress(purpose: DextopusPurpose = "deposit") {
 // all, because a deposit lands on a static address and has no request to poll.
 // That makes this the one place the settlement transactions of self-started
 // operations are known, so they are recorded here and the deposit watcher rules
-// them out instead of reporting a sale as money arriving from outside.
+// them out instead of treating a sale as money arriving from outside.
 export function useDepositStatus(
   depositRequestId: string | null,
   purpose: DextopusPurpose = "deposit"

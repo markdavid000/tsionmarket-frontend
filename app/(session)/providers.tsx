@@ -16,13 +16,9 @@ import { DecaneRecoveryHost } from "@/components/providers/decane-recovery-host"
 import { AddressBarReferral } from "@/components/layout/address-bar-referral";
 import { SignInModalHost } from "@/components/auth/sign-in-modal-host";
 import { FundsModalHost } from "@/components/layout/funds-modal-host";
-import { AnalyticsIdentity } from "@/components/providers/analytics-identity";
-import { AnalyticsSegments } from "@/components/providers/analytics-segments";
 // Deep imports, not the barrels, for the reason given for the casino import
 // below: this provider is on every session route.
-import { DepositAnalytics } from "@/features/activity/components/deposit-analytics";
-import { BankDepositAnalytics } from "@/features/funds/components/bank-deposit-analytics";
-import { BankWithdrawAnalytics } from "@/features/funds/components/bank-withdraw-analytics";
+import { DepositBalanceWatch } from "@/features/activity/components/deposit-balance-watch";
 import { PredictionCashoutTracker } from "@/features/prediction/components/prediction-cashout-tracker";
 import { BalanceVisibilityProvider } from "@/components/ui/balance-visibility";
 // Deep import, not the barrel. `@/features/casino` re-exports 27 components,
@@ -181,22 +177,16 @@ export function SessionProviders({ children }: { children: React.ReactNode }) {
                 and routes resolve the user from verified claims instead.
                 Renders nothing. */}
             <DecaneTokenBridge />
-            {/* Syncs Mixpanel's identity to auth state; needs to sit inside
-                DecaneKit to read it. Renders nothing. */}
-            <AnalyticsIdentity />
-            <AnalyticsSegments />
             {/* Renders the recovery, PIN and unlock-password dialogs the kit
                 asks for through the callbacks above. Renders nothing until one
                 is requested. */}
             <DecaneRecoveryHost />
-            {/* Report money arriving and leaving: settled deposits on either
-                rail, and bank withdrawals to their payout. Here rather than on
-                the dashboard, which a user who deposits and goes straight to
-                trading never returns to. Each waits for a signed-in wallet.
-                Render nothing. */}
-            <DepositAnalytics />
-            <BankDepositAnalytics />
-            <BankWithdrawAnalytics />
+            {/* Re-reads the balance when a deposit settles into the wallet,
+                which the cache-first portfolio would otherwise miss until the
+                next transaction. Here rather than on the dashboard, which a
+                user who deposits and goes straight to trading never returns
+                to. Waits for a signed-in wallet. Renders nothing. */}
+            <DepositBalanceWatch />
             {/* Installs the Shine runtime, so a confirmed trade anywhere in
                 the session can post itself to Market Square in the language
                 the app is being read in. Needs the session for the account

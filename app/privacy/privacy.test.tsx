@@ -30,12 +30,11 @@ describe("Privacy page", () => {
     );
   });
 
-  // The policy makes specific promises about behaviour elsewhere in the app.
-  // These are the two that would be untrue first if the code changed under it.
-  it("still tells the truth about what is masked and how sessions are identified", () => {
-    render(<PrivacyPage />);
-    expect(screen.getByText(/never by your email address/)).toBeInTheDocument();
-    expect(screen.getByText(/are not in any replay/)).toBeInTheDocument();
+  // The app runs no analytics or session recording, so the policy must not
+  // claim a vendor for either.
+  it("names no analytics or session recording provider", () => {
+    const { container } = render(<PrivacyPage />);
+    expect(container.textContent).not.toMatch(/mixpanel|clarity|session replay/i);
   });
 });
 

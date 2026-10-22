@@ -5,12 +5,11 @@ import type { PolicySection } from "@/components/ui/legal-document";
 //
 // Kept out of the page component so the policy reads as a document and can be
 // reviewed as one. Every claim here is meant to match what the app actually
-// does: the analytics identifier really is the wallet address, the masked
-// screens really are the ones carrying MASK_ATTRIBUTE, and the providers listed
-// are the ones our route handlers actually call. If a data flow changes, this
+// does: the providers listed are the ones our route handlers actually call,
+// and the app runs no analytics or session recording. If a data flow changes, this
 // file changes with it.
 
-export const LAST_UPDATED = "5 September 2026";
+export const LAST_UPDATED = "22 October 2026";
 // One inbox for the whole product; the privacy page must never name another.
 export { SUPPORT_EMAIL };
 
@@ -76,18 +75,6 @@ export const SECTIONS: PolicySection[] = [
     ],
   },
   {
-    id: "analytics",
-    title: "Analytics and session recording",
-    body: [
-      "We use two analytics tools, and one of them records what happens on your screen. That deserves a section of its own.",
-      "Mixpanel tells us which features are used and where flows are abandoned. Microsoft Clarity records anonymised session replays and heatmaps, so we can see that a button was pressed four times and never worked rather than waiting for someone to report it.",
-      "Both identify a session by your EVM wallet address, never by your email address. The address is already the identifier your on chain activity carries, so using it adds nothing that the chain does not already expose, and it keeps your email out of an analytics vendor.",
-      "Screens that handle sensitive data are excluded from recording at the source. Identity verification, bank withdrawal, and bank transfer screens are marked so that Clarity records a placeholder in place of the values you type. Mixpanel does not capture what you type or click at all: it receives only named events, such as a completed deposit or trade, with amounts and never account numbers. Your identity documents, bank details and account numbers are not in any replay or event.",
-      "Mixpanel events are sent through our own website address and stored in Mixpanel's United States data centre.",
-      "Analytics only runs when it is configured for the environment you are using, and a failure in it never affects the platform.",
-    ],
-  },
-  {
     id: "sharing",
     title: "Who we share information with",
     body: [
@@ -103,7 +90,6 @@ export const SECTIONS: PolicySection[] = [
           "Jupiter, for Solana swap routing.",
           "CoinGecko and GeckoTerminal, for market prices and token data.",
           "IPinfo, for the country lookup that applies our regional restrictions.",
-          "Mixpanel and Microsoft Clarity, for analytics and session replay, as described above.",
           "SendGrid, for email we send you.",
           "LiveKit, for live video and audio in Market Square.",
           "Cloudinary, for images you upload.",
@@ -120,7 +106,7 @@ export const SECTIONS: PolicySection[] = [
     body: [
       "We use a small number of cookies and browser storage entries. The essential ones keep you signed in: Privy sets a session token that our servers check on every request that touches your account, and without it the platform cannot tell who you are.",
       "We also store preferences in your browser, such as your chosen language, whether balances are hidden, and which interface you last used. These stay on your device.",
-      "Our analytics providers set their own identifiers, as described in the analytics section. You can block cookies in your browser, but blocking the essential ones will sign you out and stop most of the platform from working.",
+      "You can block cookies in your browser, but blocking the essential ones will sign you out and stop most of the platform from working.",
     ],
   },
   {
@@ -141,7 +127,6 @@ export const SECTIONS: PolicySection[] = [
           "Account and profile information: while your account is open, and for a limited period afterwards so it can be restored if you return or dispute a closure.",
           "Identity verification records: for the period financial regulations require, which is usually several years after your last transaction, and is set by the rules our providers operate under rather than by us.",
           "Transaction records we hold: for as long as we need them for accounting, tax and dispute resolution.",
-          "Analytics and session recordings: for the retention window of the provider, which is measured in months rather than years.",
           "On chain records: permanently, by the design of the blockchain, and outside our control.",
         ],
       },
@@ -167,7 +152,7 @@ export const SECTIONS: PolicySection[] = [
           "Access: a copy of what we hold about you.",
           "Correction: fixing anything inaccurate.",
           "Deletion: removing what we hold, subject to the records we are legally required to keep.",
-          "Restriction and objection: asking us to stop certain processing, including analytics and marketing.",
+          "Restriction and objection: asking us to stop certain processing, including marketing.",
           "Portability: receiving your information in a machine readable form.",
           "Withdrawing consent: where we relied on your consent, at any time, without affecting what came before.",
         ],

@@ -11,11 +11,9 @@ import { MODAL_PANEL_CLASS, useModalDismiss } from "@/components/ui/modal-trigge
 import { StatusChip } from "@/components/ui/status-chip";
 import { explorerTxHref, type ActivityFeedItem, type ActivityLabel } from "@/lib/activity/feed";
 import { fullTimestamp } from "@/lib/activity/time";
-import { track } from "@/lib/analytics/mixpanel";
 import type { MarketSquareDeepLink } from "@/lib/api/market-square";
 import { encodeGameRef } from "@/lib/broadcast/deep-link";
 import { truncateAddress } from "@/lib/format";
-import { signOf } from "@/lib/meme/decimal";
 import { tokenBg } from "@/lib/trade/assets";
 import { networkLabel } from "@/lib/trade/networks";
 import { cn } from "@/lib/utils";
@@ -260,15 +258,6 @@ export function ActivityDetailSheet({ item, onClose }: ActivityDetailSheetProps)
                     href={explorer}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={() =>
-                      track("arktivity_tx_opened", {
-                        network: chain.network,
-                        // The view model carries a signed amount rather than a
-                        // direction, and the sign is exactly what the adapter
-                        // derived from it, so the event keeps its old meaning.
-                        direction: signOf(item.amount.value) === -1 ? "out" : "in",
-                      })
-                    }
                     className={cn(
                       ACTION,
                       "border-hairline bg-surface border text-white/80 hover:bg-white/10 hover:text-white"

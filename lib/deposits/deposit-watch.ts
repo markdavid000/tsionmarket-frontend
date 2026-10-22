@@ -1,19 +1,19 @@
 // A crypto deposit arrives at a Dextopus static address and settles into the
 // user's wallet minutes or hours later, usually with the app closed. There is
-// no request id to poll and no success handler to hang an event on, so the only
-// moment the client can observe is the settled transfer showing up in activity.
+// no request id to poll and no success handler to hang a refresh on, so the
+// only moment the client can observe is the settled transfer showing up in
+// activity.
 //
 // This is the pure half of that: given the transfers we can see and the ones
-// already reported, it says which are new deposits. The hook that owns the
+// already handled, it says which are new deposits. The hook that owns the
 // stored set is in features/activity.
 
-import { normalizeHash } from "@/lib/analytics/self-initiated";
+import { normalizeHash } from "@/lib/deposits/self-initiated";
 import type { ActivityItem } from "@/lib/server/activity";
 
 // Dextopus settles every deposit as USDC, so an arriving stablecoin is a
 // deposit landing and its token amount is its dollar amount. Anything else
-// would need a price lookup to report amount_usd, and a guessed figure on a
-// money event is worse than no event.
+// would need a price lookup to put a dollar figure on it.
 const SETTLED_SYMBOLS = new Set(["USDC", "USDT"]);
 
 // Enough to cover any plausible run of arrivals between two visits, while
@@ -43,9 +43,9 @@ function isStablecoinArrival(item: ActivityItem): boolean {
  * Every inbound stablecoin transfer in `items`, whether or not it counts as a
  * deposit.
  *
- * The caller remembers these rather than only the ones it reported, so a
+ * The caller remembers these rather than only the ones it acted on, so a
  * transfer ruled out as self-caused stays ruled out. Without that it would be
- * reconsidered on every visit and would eventually be reported as a deposit,
+ * reconsidered on every visit and would eventually be treated as a deposit,
  * once its hash aged out of the self-initiated record.
  */
 export function depositCandidateIds(items: ActivityItem[]): string[] {
@@ -60,11 +60,9 @@ export function depositCandidateIds(items: ActivityItem[]): string[] {
  * Excluding them is what stops a sale, a conversion, a perp close or a game
  * withdrawal from being counted as money arriving from outside: all of those
  * end as inbound stablecoin, and nothing else about the transfer distinguishes
- * them. Getting this wrong does not just mislabel an event, it marks a user who
- * never funded the account as a depositor, because the profile totals follow
- * `deposit_completed`.
+ * them.
  *
- * Ordering matters: callers report these in the order returned, so a user who
+ * Ordering matters: callers handle these in the order returned, so a user who
  * was away for three deposits gets them in the order they happened.
  */
 export function newDepositArrivals(
@@ -91,11 +89,11 @@ export function newDepositArrivals(
 }
 
 /**
- * The ids to remember after reporting, capped.
+ * The ids to remember after handling, capped.
  *
  * The cap drops the oldest, which is safe because activity itself is finite and
  * ordered: an id old enough to fall out of this set is old enough to have
- * fallen out of the feed that could re-report it.
+ * fallen out of the feed that could surface it again.
  */
 export function rememberArrivals(seen: Set<string>, ids: string[]): string[] {
   const next = [...seen, ...ids];

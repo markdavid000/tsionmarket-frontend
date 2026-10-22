@@ -5,10 +5,6 @@ import { useTranslations } from "next-intl";
 import { useMemeTrade } from "@/features/trade/hooks/use-meme-trade";
 import { usePortfolio } from "@/hooks/use-portfolio";
 import { useSettlementReconciler } from "@/hooks/use-settlement-reconciler";
-import { track } from "@/lib/analytics/mixpanel";
-import { amountFromBaseUnits, tradeAmounts, USDC_DECIMALS } from "@/lib/analytics/trade-amounts";
-import { TRADE_FAILURE, reasonFor } from "@/lib/analytics/failure-reason";
-import { swapTradeFacts } from "@/features/trade/lib/trade-analytics";
 import { SOLANA_CHAIN_ID } from "@/lib/meme/chain";
 import { usdcFromRaw } from "@/lib/meme/funding";
 import { toast } from "@/lib/toast";
@@ -46,7 +42,7 @@ export function MemeSettlementTracker() {
       if (spendRaw < minimumDeliveryRaw) return false;
 
       try {
-        const result = await trade({
+        await trade({
           side: "BUY",
           tokenAddress: purchase.assetAddress,
           amount: usdcFromRaw(spendRaw),
@@ -59,26 +55,6 @@ export function MemeSettlementTracker() {
         clearPendingRwaSettlement(settlement.requestId);
         await refetchFresh(CROSS_CHAIN);
         void refetchUntilChanged(CROSS_CHAIN);
-        // What this leg spent is exact: the USDC that arrived, capped at the
-        // amount asked for. A Solana quote states no amounts of its own.
-        const spent = tradeAmounts({
-          usdRaw: spendRaw,
-          usdDecimals: USDC_DECIMALS,
-          tokenRaw: null,
-          tokenDecimals: null,
-          source: "fill",
-        });
-        const facts = swapTradeFacts(result, spent);
-        if (facts) {
-          track("trade_completed", {
-            vertical: "memecoin",
-            asset: purchase.assetSymbol,
-            side: "buy",
-            ...facts,
-            network: "solana",
-            token_address: purchase.assetAddress,
-          });
-        }
         toast.success(t("purchaseBackgroundComplete", { symbol: purchase.assetSymbol }));
       } catch (error) {
         // The move has already finished. Never recreate or resend it. The USD
@@ -87,14 +63,6 @@ export function MemeSettlementTracker() {
         clearPendingRwaSettlement(settlement.requestId);
         await refetchFresh(CROSS_CHAIN);
         console.error("Background memecoin purchase failed", error);
-        track("trade_failed", {
-          vertical: "memecoin",
-          asset: purchase.assetSymbol,
-          side: "buy",
-          ...reasonFor(TRADE_FAILURE, error),
-          amount_usd: amountFromBaseUnits(spendRaw, USDC_DECIMALS),
-          order_id: settlement.requestId,
-        });
         toast.error(t("purchaseBackgroundFailed", { symbol: purchase.assetSymbol }));
       }
       return true;

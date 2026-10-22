@@ -23,9 +23,8 @@
 //
 // 3. No figure is ever built from a float. Stakes and payouts arrive as
 //    decimal strings; they go to bigint base units and stay there until
-//    lib/shine/money renders the percentage. `Number(stake)` is what
-//    lib/analytics/game-result does, and analytics may round — a public post
-//    that cannot be edited may not.
+//    lib/shine/money renders the percentage. A public post that cannot be
+//    edited may not round.
 
 import { CASINO_GAMES } from "@/features/casino/lib/games";
 import type { ChessColor, ChessComputerWager, ChessMatch } from "@/features/casino/lib/api/types";
@@ -117,8 +116,8 @@ function arcadeEvent(
  *
  * Null when the fee was never snapshotted onto the match. A post cannot be
  * corrected, so an unknown fee is a missing percentage rather than a guessed
- * one; the 10% default that lib/analytics falls back to would be a made-up
- * number in a permanent public sentence.
+ * one; a default rate would be a made-up number in a permanent public
+ * sentence.
  */
 function headToHeadWinPnl(stakeUsdc: string | null, feeBps: number | null): PnlPercent | null {
   if (stakeUsdc === null || feeBps === null || !Number.isFinite(feeBps) || feeBps < 0) return null;

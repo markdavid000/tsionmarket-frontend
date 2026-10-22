@@ -147,7 +147,7 @@ export function SquarePostCard({
   const t = useTranslations("square");
   const engage = useSquareEngage();
   const [commenting, setCommenting] = useState(false);
-  const seenRef = useRecordView(post.id, post.author?.id);
+  const seenRef = useRecordView(post.id);
   const author = post.author;
   // Never offer to follow yourself.
   const isMe = meId !== undefined && author?.id === meId;
@@ -393,7 +393,6 @@ export function SquarePostCard({
               postId: post.id,
               action: "repost",
               on: !post.repostedByMe,
-              authorId: post.author?.id,
             })
           }
         >
@@ -420,7 +419,6 @@ export function SquarePostCard({
               postId: post.id,
               action: "like",
               on: !post.likedByMe,
-              authorId: post.author?.id,
             })
           }
         >

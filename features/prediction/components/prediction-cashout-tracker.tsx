@@ -4,7 +4,7 @@ import { useAuthSession } from "@/hooks/use-auth-session";
 import { useEffect, useSyncExternalStore } from "react";
 import { fetchDepositStatus } from "@/hooks/use-deposit";
 import { usePortfolio } from "@/hooks/use-portfolio";
-import { recordSelfInitiated } from "@/lib/analytics/self-initiated";
+import { recordSelfInitiated } from "@/lib/deposits/self-initiated";
 import { depositProgress } from "@/lib/deposit";
 import {
   clearPendingPredictionCashout,
