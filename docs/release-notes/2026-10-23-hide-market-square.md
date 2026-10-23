@@ -16,6 +16,9 @@ Everything below is commented out, not deleted. Search for
   square cards in "Join the Conversation" and the portfolio's Market Square
   banner are hidden. The conversation row keeps its chess room card and its
   heading now links to `/casino/chess`.
+- **Phone tab bar.** Four evenly spaced tabs. The glow and the section name
+  slide to sit under the active tab, instead of the active tab moving to the
+  centre.
 - **No posting.** The "Share to Market Square" buttons in activity and after a
   buy, the "Broadcast to Market Square" panels in chess, checkers, Arkball and
   Last Man Standing, and the Go Live control are hidden.

@@ -36,6 +36,11 @@ vi.mock("motion/react", () => {
       button: ({ animate, style, ...props }: MotionProps) => (
         <button {...strip(props)} style={{ ...style, ...animate }} />
       ),
+      img: ({ animate, style, ...props }: MotionProps) => (
+        // A stand-in for motion.img, so a plain img is the point here.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img alt="" {...strip(props)} style={{ ...style, ...animate }} />
+      ),
     },
     AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     useReducedMotion: () => true,
@@ -85,14 +90,25 @@ describe("CurvedTabBar", () => {
   });
 
   // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
-  // With four tabs the active one still takes the centre, two sit to its left
-  // and one to its right, and nothing lands on the outer right seat.
-  it("seats four tabs around the centre without using the outer right seat", () => {
-    const { container } = renderBar(vi.fn(), "spot");
-    const lefts = within(container)
-      .getAllByRole("button")
-      .map((b) => b.style.left);
-    expect(lefts).toEqual(["15%", "32.3%", "50%", "71.4%"]);
+  // With four tabs each keeps its own seat, evenly spaced across the dome, and
+  // the order does not change with the page.
+  it("spaces the four tabs evenly and keeps their order whatever is active", () => {
+    for (const section of ["portfolio", "spot", "casino", "activity"] as const) {
+      const { container, unmount } = render(
+        <CurvedTabBar items={NAV} activeSection={section} onNavigate={vi.fn()} />
+      );
+      const seats = within(container)
+        .getAllByRole("button")
+        .map((b) => [b.getAttribute("aria-label"), b.style.left]);
+      expect(seats).toEqual([
+        ["Home", "17.5%"],
+        ["Market", "39.17%"],
+        ["Arkade", "60.83%"],
+        ["Activity", "82.5%"],
+      ]);
+      unmount();
+    }
+    renderBar(vi.fn(), "spot");
     expect(screen.getByRole("button", { name: "Market" })).toHaveAttribute("aria-current", "page");
   });
 
@@ -145,22 +161,39 @@ describe("CurvedTabBar", () => {
     expect(router.push).toHaveBeenCalledWith("/activity");
   });
 
-  it("raises the active section's icon into the centre seat", () => {
-    // The centre seat is SEATS[2] = { x: 50, y: 30 }, and the stub folds the
-    // animated position into the element's style. Whichever section owns the
-    // page rides up there and reads as the current page.
-    const home = within(renderBar(vi.fn(), "portfolio").container).getByRole("button", {
-      name: "Home",
-    });
-    expect(home).toHaveAttribute("aria-current", "page");
-    expect(home.style.left).toBe("50%");
-    expect(home.style.top).toBe("30%");
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // With five tabs the active icon rode up into the centre seat.
+  // it("raises the active section's icon into the centre seat", () => {
+  //   // The centre seat is SEATS[2] = { x: 50, y: 30 }, and the stub folds the
+  //   // animated position into the element's style. Whichever section owns the
+  //   // page rides up there and reads as the current page.
+  //   const home = within(renderBar(vi.fn(), "portfolio").container).getByRole("button", {
+  //     name: "Home",
+  //   });
+  //   expect(home).toHaveAttribute("aria-current", "page");
+  //   expect(home.style.left).toBe("50%");
+  //   expect(home.style.top).toBe("30%");
+  //
+  //   const activity = within(renderBar(vi.fn(), "activity").container).getByRole("button", {
+  //     name: "Activity",
+  //   });
+  //   expect(activity).toHaveAttribute("aria-current", "page");
+  //   expect(activity.style.left).toBe("50%");
+  // });
 
-    const activity = within(renderBar(vi.fn(), "activity").container).getByRole("button", {
-      name: "Activity",
-    });
+  it("keeps the active icon in its seat and moves the glow and name under it", () => {
+    // The stub folds each animated position into the element's style, so the
+    // glow and the name can be read where they landed.
+    const { container } = renderBar(vi.fn(), "activity");
+    const activity = within(container).getByRole("button", { name: "Activity" });
     expect(activity).toHaveAttribute("aria-current", "page");
-    expect(activity.style.left).toBe("50%");
+    expect(activity.style.left).toBe("82.5%");
+    expect(activity.style.top).toBe("52%");
+
+    const glow = container.querySelector<HTMLElement>('img[src="/nav/glow.svg"]');
+    expect(glow?.style.left).toBe("82.5%");
+    const name = screen.getByText("Activity", { selector: "span" }).parentElement;
+    expect(name?.style.left).toBe("82.5%");
   });
 
   it("names the active section under the dock", () => {

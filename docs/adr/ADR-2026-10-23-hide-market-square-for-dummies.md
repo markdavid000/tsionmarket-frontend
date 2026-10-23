@@ -33,7 +33,8 @@ posting is not switched on.
 ## What looks different?
 
 - No Square in the menu or the phone's bottom bar. The bottom bar has four
-  icons instead of five, so there is a gap on the right.
+  evenly spaced icons instead of five, and the purple glow and the page name
+  now move to sit under whichever icon you are on.
 - The dashboard's "Join the Conversation" row shows only the chess room.
 - The portfolio has no Market Square banner.
 - The Kash card shows Send and Convert, with no Buy.

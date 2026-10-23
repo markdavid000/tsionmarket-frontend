@@ -76,10 +76,13 @@ the locale strings. Their own unit tests still run against them.
 
 ### Behaviour that follows
 
-- **Phone tab bar.** It has four tabs on a dome drawn for five seats. The
-  active tab takes the centre, two sit to its left, one to its right, and the
-  far right seat stays empty. Spacing four tabs evenly would be a redesign of
-  the dome, which is left to the designer.
+- **Phone tab bar.** It has four tabs, evenly spaced across the dome, each in
+  its own seat. Four tabs cannot sit evenly around a centre seat, so the
+  five-tab behaviour, where the active tab rode up into the centre under a
+  fixed glow and name, is commented out. The glow and the section's name now
+  slide along the dome to sit under the active icon. The outer seats sit lower
+  than the inner ones because the dome falls away at the sides, and the glow
+  leans with it there.
 - **Desktop promo rail.** It shows ArkStore, Ark ID, stake and Kash. The
   second stake banner only stood in for the square's slot, so it is not shown.
 - **Kash card.** It shows Send (where enabled) and Convert. The mobile card's
