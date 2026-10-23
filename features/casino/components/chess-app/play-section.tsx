@@ -15,10 +15,11 @@ import { useChessShine } from "@/features/casino/hooks/use-arcade-shine";
 import { CASHIER_KEYS, useChessCashierStatus } from "@/features/casino/hooks/use-chess-cashier";
 import { useChessProducts } from "@/features/casino/hooks/use-chess-products";
 import { CashierSheet } from "@/features/casino/components/chess/cashier-sheet";
-import {
-  ChessBroadcastProvider,
-  GoLivePanel,
-} from "@/features/casino/components/chess/go-live-panel";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// import {
+//   ChessBroadcastProvider,
+//   GoLivePanel,
+// } from "@/features/casino/components/chess/go-live-panel";
 import { ChessCashierLauncher } from "@/features/casino/components/chess/chess-cashier-launcher";
 import { ChessBoard } from "@/features/casino/components/chess/chess-board";
 import { CapturedRow } from "@/features/casino/components/chess/captured-row";
@@ -1718,11 +1719,12 @@ export function PlaySection({
     clockMode === "unlimited"
       ? 1
       : Math.max(0.04, Math.min((clocks?.[colour] ?? 0) / initialClockSeconds, 1));
-  // Participants only, and never on a game against the computer: there is no
-  // second player and nothing worth spectating. Both players may broadcast at
-  // once, each owning their own Market Square stream.
-  const canBroadcastMatch = you !== null && !isComputerGame && matchId !== null;
-  const goLivePanel = canBroadcastMatch ? <GoLivePanel matchOver={over} /> : null;
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // // Participants only, and never on a game against the computer: there is no
+  // // second player and nothing worth spectating. Both players may broadcast at
+  // // once, each owning their own Market Square stream.
+  // const canBroadcastMatch = you !== null && !isComputerGame && matchId !== null;
+  // const goLivePanel = canBroadcastMatch ? <GoLivePanel matchOver={over} /> : null;
 
   const roundView = (
     <div className="round ws-chess-round-root relative mx-auto w-full px-4 pb-8 sm:px-6 lg:px-8">
@@ -2179,7 +2181,8 @@ export function PlaySection({
                   </button>
                 </div>
               ) : null}
-              {goLivePanel}
+              {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+              {goLivePanel} */}
               {over ? (
                 <PostGameActions
                   result={resultLine(t, match, you)}
@@ -2425,7 +2428,8 @@ export function PlaySection({
                 </button>
               </div>
             ) : null}
-            <div className="shrink-0 px-4 pb-3">{goLivePanel}</div>
+            {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+            <div className="shrink-0 px-4 pb-3">{goLivePanel}</div> */}
             {over ? (
               <div className="ws-chess-round-rail-controls min-h-0 overflow-y-auto">
                 <PostGameActions
@@ -2742,20 +2746,22 @@ export function PlaySection({
     </div>
   );
 
-  // The round view renders the mobile column and the desktop rail at the same
-  // time and hides one with CSS, so the go-live panel appears twice. The
-  // provider is mounted once above both, which keeps one broadcast to one
-  // LiveKit room. Spectators never mount it, so they never ask Market Square
-  // about a role they are not going to use.
-  return canBroadcastMatch ? (
-    <ChessBroadcastProvider
-      matchId={matchId}
-      whiteName={whiteDisplayName}
-      blackName={blackDisplayName}
-    >
-      {roundView}
-    </ChessBroadcastProvider>
-  ) : (
-    roundView
-  );
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // // The round view renders the mobile column and the desktop rail at the same
+  // // time and hides one with CSS, so the go-live panel appears twice. The
+  // // provider is mounted once above both, which keeps one broadcast to one
+  // // LiveKit room. Spectators never mount it, so they never ask Market Square
+  // // about a role they are not going to use.
+  // return canBroadcastMatch ? (
+  //   <ChessBroadcastProvider
+  //     matchId={matchId}
+  //     whiteName={whiteDisplayName}
+  //     blackName={blackDisplayName}
+  //   >
+  //     {roundView}
+  //   </ChessBroadcastProvider>
+  // ) : (
+  //   roundView
+  // );
+  return roundView;
 }

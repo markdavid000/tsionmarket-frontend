@@ -72,10 +72,14 @@ const MigrationGateHost = dynamic(() => import("@/components/layout/migration-ga
 // statically it put 172 kB on /auth and /interests for a runtime that posts
 // nothing until a trade confirms. A trade cannot confirm before this chunk
 // has long since landed.
-const ShineRuntimeUnderMigration = dynamic(
-  () => import("@/features/migrate/components/shine-runtime-under-migration"),
-  { ssr: false }
-);
+//
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// Shine only ever posts into the square, so the runtime is not mounted while
+// the square is hidden. With no runtime installed, reportShine posts nothing.
+// const ShineRuntimeUnderMigration = dynamic(
+//   () => import("@/features/migrate/components/shine-runtime-under-migration"),
+//   { ssr: false }
+// );
 
 const DECANE_CHAINS = ["evm:8453", "evm:1", "evm:42161", "evm:10", "evm:137", "solana:mainnet"];
 
@@ -187,15 +191,18 @@ export function SessionProviders({ children }: { children: React.ReactNode }) {
                 user who deposits and goes straight to trading never returns
                 to. Waits for a signed-in wallet. Renders nothing. */}
             <DepositBalanceWatch />
-            {/* Installs the Shine runtime, so a confirmed trade anywhere in
+            {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+                Not mounted while the square is hidden, so nothing is posted to it.
+
+                Installs the Shine runtime, so a confirmed trade anywhere in
                 the session can post itself to Market Square in the language
                 the app is being read in. Needs the session for the account
                 and the query client for the account's own Shine preferences,
                 and mounts here rather than per service page because a swap
                 can confirm long after the page that started it is gone.
                 Paused while an account upgrade is pending (see the wrapper).
-                Renders nothing. */}
-            <ShineRuntimeUnderMigration />
+                Renders nothing.
+            <ShineRuntimeUnderMigration /> */}
             {/* Watches open Polymarket cashouts for the market workspace.
                 Needs Privy and the query client. Renders nothing. */}
             <PredictionCashoutTracker />

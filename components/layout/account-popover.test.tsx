@@ -73,7 +73,8 @@ vi.mock("@/hooks/use-square-avatar", () => ({
   useSquareSeed: () => "seed",
 }));
 
-const onOpenShine = vi.fn();
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// const onOpenShine = vi.fn();
 
 describe("AccountPopover", () => {
   it("renders nothing when closed", () => {
@@ -81,7 +82,8 @@ describe("AccountPopover", () => {
     render(
       <AccountPopover
         open={false}
-        onOpenShine={onOpenShine}
+        // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+        // onOpenShine={onOpenShine}
         onClose={() => {}}
         triggerRef={triggerRef}
       />
@@ -94,7 +96,8 @@ describe("AccountPopover", () => {
     render(
       <AccountPopover
         open={true}
-        onOpenShine={onOpenShine}
+        // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+        // onOpenShine={onOpenShine}
         onClose={() => {}}
         triggerRef={triggerRef}
       />
@@ -106,6 +109,14 @@ describe("AccountPopover", () => {
     expect(screen.getByRole("menuitem", { name: /inviteFriends/i })).toBeInTheDocument();
   });
 
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  it("offers no Shine row while the square is hidden", () => {
+    const triggerRef = { current: document.createElement("button") };
+    render(<AccountPopover open={true} onClose={() => {}} triggerRef={triggerRef} />);
+    expect(screen.queryByRole("menuitem", { name: /^shine$/i })).toBeNull();
+    expect(screen.getByRole("menuitem", { name: /helpSupport/i })).toBeInTheDocument();
+  });
+
   it("names the account by its Ark ID when the wallet holds one, email unchanged", () => {
     arkName.value = "signor.ark";
     const triggerRef = { current: document.createElement("button") };
@@ -113,7 +124,8 @@ describe("AccountPopover", () => {
       render(
         <AccountPopover
           open={true}
-          onOpenShine={onOpenShine}
+          // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+          // onOpenShine={onOpenShine}
           onClose={() => {}}
           triggerRef={triggerRef}
         />
@@ -132,7 +144,8 @@ describe("AccountPopover", () => {
     render(
       <AccountPopover
         open={true}
-        onOpenShine={onOpenShine}
+        // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+        // onOpenShine={onOpenShine}
         onClose={onClose}
         triggerRef={triggerRef}
       />
@@ -152,7 +165,8 @@ describe("AccountPopover", () => {
     render(
       <AccountPopover
         open={true}
-        onOpenShine={onOpenShine}
+        // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+        // onOpenShine={onOpenShine}
         onClose={onClose}
         triggerRef={triggerRef}
       />
@@ -172,7 +186,8 @@ describe("AccountPopover", () => {
     const { rerender } = render(
       <AccountPopover
         open={true}
-        onOpenShine={onOpenShine}
+        // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+        // onOpenShine={onOpenShine}
         onClose={() => {}}
         triggerRef={triggerRef}
       />
@@ -182,7 +197,8 @@ describe("AccountPopover", () => {
     rerender(
       <AccountPopover
         open={false}
-        onOpenShine={onOpenShine}
+        // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+        // onOpenShine={onOpenShine}
         onClose={() => {}}
         triggerRef={triggerRef}
       />
@@ -208,7 +224,8 @@ describe("the migration row", () => {
       <>
         <AccountPopover
           open={true}
-          onOpenShine={onOpenShine}
+          // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+          // onOpenShine={onOpenShine}
           onClose={() => {}}
           triggerRef={triggerRef}
         />

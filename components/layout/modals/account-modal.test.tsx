@@ -65,7 +65,7 @@ vi.mock("@/hooks/use-square-avatar", () => ({
 }));
 
 function renderModal() {
-  return render(<AccountModal onClose={() => {}} onOpenShine={() => {}} />);
+  return render(<AccountModal onClose={() => {}} />);
 }
 
 describe("AccountModal identity", () => {
@@ -91,17 +91,28 @@ describe("AccountModal identity", () => {
   // nothing happened. The desktop menu opens the chat; so does this.
   it("opens the support chat from Help & support, and closes the sheet", () => {
     const onClose = vi.fn();
-    render(<AccountModal onClose={onClose} onOpenShine={() => {}} />);
+    render(<AccountModal onClose={onClose} />);
     fireEvent.click(screen.getByRole("button", { name: /helpSupport/ }));
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(support.openSupportChat).toHaveBeenCalledTimes(1);
   });
 });
 
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// The Shine row is commented out, and with it the onOpenShine prop these
+// renders used to pass.
+describe("AccountModal Shine row", () => {
+  it("offers no Shine row while the square is hidden", () => {
+    renderModal();
+    expect(screen.queryByRole("button", { name: /^shine$/i })).toBeNull();
+    expect(screen.getByRole("button", { name: /helpSupport/ })).toBeInTheDocument();
+  });
+});
+
 describe("AccountModal sign out", () => {
   it("signs out and closes the sheet, leaving the visitor on the same page", async () => {
     const onClose = vi.fn();
-    render(<AccountModal onClose={onClose} onOpenShine={() => {}} />);
+    render(<AccountModal onClose={onClose} />);
     fireEvent.click(screen.getByRole("button", { name: /signOut/ }));
     await waitFor(() => expect(logout).toHaveBeenCalledTimes(1));
     expect(onClose).toHaveBeenCalled();

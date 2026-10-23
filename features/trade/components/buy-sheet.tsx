@@ -23,9 +23,10 @@ import { swapRouteForSymbol } from "@/lib/spot-swap";
 import { depositProgress, usdcBaseUnits, type DepositStage } from "@/lib/deposit";
 import { formatAmount, fromBaseUnits } from "@/lib/trade/math";
 import { toast } from "@/lib/toast";
-import { tradeShareRef } from "@/lib/trade-share";
-import { useMoney } from "@/components/ui/currency-select";
-import { ShareToSquare } from "@/components/share/share-to-square";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// import { tradeShareRef } from "@/lib/trade-share";
+// import { useMoney } from "@/components/ui/currency-select";
+// import { ShareToSquare } from "@/components/share/share-to-square";
 import { reportShine } from "@/lib/shine";
 import { friendlyError } from "@/lib/errors";
 import type { BuyPayload } from "@/lib/modal-types";
@@ -123,8 +124,13 @@ export function BuySheet({ payload, onClose, onTopUp }: BuySheetProps) {
   const [requestId, setRequestId] = useState<string | null>(null);
   // The settled transaction for the order path. The swap path carries its own
   // on the trade hook, since only it knows which of its calls was the swap.
-  const [settledTx, setSettledTx] = useState<{ txHash: string; chainId: number } | null>(null);
-  const [sharing, setSharing] = useState(false);
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // Only the share button read the settled transaction. The order path still
+  // records it, so the setter stays and the flow is unchanged.
+  // const [settledTx, setSettledTx] = useState<{ txHash: string; chainId: number } | null>(null);
+  const [, setSettledTx] = useState<{ txHash: string; chainId: number } | null>(null);
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // const [sharing, setSharing] = useState(false);
   const [bought, setBought] = useState<string>("");
   const [picking, setPicking] = useState(false);
   const status = useDepositStatus(requestId, "trade");
@@ -139,9 +145,11 @@ export function BuySheet({ payload, onClose, onTopUp }: BuySheetProps) {
   );
 
   const value = Number(amount) || 0;
-  // The same formatter the activity rows use, so a shared figure reads
-  // identically wherever it is shared from.
-  const money = useMoney();
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // The formatter only priced the share card.
+  // // The same formatter the activity rows use, so a shared figure reads
+  // // identically wherever it is shared from.
+  // const money = useMoney();
   // Only flag a shortfall once the balance has actually loaded; until then we
   // don't know it, and a zero must block like any other insufficient balance.
   const notEnough = !portfolio.loading && value > balance;
@@ -377,10 +385,11 @@ export function BuySheet({ payload, onClose, onTopUp }: BuySheetProps) {
     const unrecorded = isSwapMarket && swapUnrecorded;
     // The support reference for a trade the service has not recorded yet.
     const unrecordedRef = tradeRef(memeTrade.swapId, memeTrade.requestId);
-    // Whichever path settled. Null means the trade cannot be pointed at, and
-    // then no share is offered at all.
-    const settlement = isSwapMarket ? memeTrade.settled : settledTx;
-    const shareRef = tradeShareRef(settlement?.chainId ?? null, settlement?.txHash ?? null);
+    // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+    // // Whichever path settled. Null means the trade cannot be pointed at, and
+    // // then no share is offered at all.
+    // const settlement = isSwapMarket ? memeTrade.settled : settledTx;
+    // const shareRef = tradeShareRef(settlement?.chainId ?? null, settlement?.txHash ?? null);
     // Green marks money that verifiably moved; pending stays neutral.
     const color = failed
       ? "#f6a5a5"
@@ -445,13 +454,14 @@ export function BuySheet({ payload, onClose, onTopUp }: BuySheetProps) {
           )}
         </div>
 
-        {/* Offered at the moment it happened, which is the only moment somebody
+        {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+            Offered at the moment it happened, which is the only moment somebody
             actually wants to post about it. Until now the only way to share a
             trade was to leave, open the activity list and find the row.
 
             Only when the trade can be pointed at: an unknown chain or a hash
             that is not one yields no ref and no button, because a share that
-            posts a dead link is worse than no share. */}
+            posts a dead link is worse than no share.
         {done && shareRef && (
           <button
             onClick={() => setSharing(true)}
@@ -460,16 +470,21 @@ export function BuySheet({ payload, onClose, onTopUp }: BuySheetProps) {
             {t("shareToSquare")}
           </button>
         )}
+        */}
 
+        {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+            With no share button above it, Done always takes the full top gap.
+            className={`ws-chrome text-ink w-full cursor-pointer rounded-[14px] bg-white p-3.5 font-sans text-[15px] font-semibold hover:opacity-90 ${
+              done && shareRef ? "mt-3" : "mt-5"
+            }`} */}
         <button
           onClick={onClose}
-          className={`ws-chrome text-ink w-full cursor-pointer rounded-[14px] bg-white p-3.5 font-sans text-[15px] font-semibold hover:opacity-90 ${
-            done && shareRef ? "mt-3" : "mt-5"
-          }`}
+          className="ws-chrome text-ink mt-5 w-full cursor-pointer rounded-[14px] bg-white p-3.5 font-sans text-[15px] font-semibold hover:opacity-90"
         >
           {t("done")}
         </button>
 
+        {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
         {sharing && shareRef && (
           <ShareToSquare
             draft={{
@@ -485,6 +500,7 @@ export function BuySheet({ payload, onClose, onTopUp }: BuySheetProps) {
             onClose={() => setSharing(false)}
           />
         )}
+        */}
       </div>
     );
   }

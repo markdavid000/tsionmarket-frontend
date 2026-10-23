@@ -35,7 +35,8 @@ function ButtonIcon({ src, flip }: { src: string; flip?: "vertical" | "both" }) 
 }
 
 interface KashCardProps {
-  onBuy: () => void;
+  // Kash Buy hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // onBuy: () => void;
   /** Opens the Send Kash modal: a wallet address and an amount. */
   onSend: () => void;
   /** Settle accrued points into KSH now. Absent while there is nothing to claim. */
@@ -53,7 +54,8 @@ interface KashCardProps {
 // gate it shows progress toward it, since "75% there" invites the next buy in
 // a way a bare lock never does.
 export function KashCard({
-  onBuy,
+  // Kash Buy hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // onBuy,
   onSend,
   onClaim,
   claiming,
@@ -297,19 +299,24 @@ export function KashCard({
           the row wraps instead of squeezing them. min-h rather than h so a
           wrapped row still cannot clip a label. */}
       <div className="mt-[24px] flex flex-wrap gap-[10.23px] sm:ml-[2.18px]">
+        {/* Kash Buy hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+        The yellow Kash banner on the promo rail still opens the buy modal.
         <button
           onClick={onBuy}
           className="ws-pressable flex min-h-[52.41px] flex-1 basis-[121.73px] cursor-pointer items-center justify-center gap-[6px] rounded-full border-[1.92px] border-[#FFD52D] bg-white px-[22px] py-[13px] font-serif text-[16px] leading-[24.92px] font-medium whitespace-nowrap text-black"
         >
-          {/* Buy brings Kash IN, so the arrow points down into the balance,
-              the deposit convention every wallet shares. */}
+          Buy brings Kash IN, so the arrow points down into the balance,
+          the deposit convention every wallet shares.
           <ButtonIcon src="/market/kash-icon-arrow-buy.svg" />
           {t("buy")}
         </button>
-        {/* Send sits between Buy and Convert: the three are what you can do
-            with a balance, in the order you would do them. Ink on the card's
-            own gold rather than a third fill, so Buy stays the one bright
-            pill and the row does not read as three equal shouts. */}
+        */}
+        {/* With Buy hidden, Send leads the row and Convert follows; both keep
+            flex-1, so they share the full width. When Buy returns, Send sits
+            between Buy and Convert: the three are what you can do with a
+            balance, in the order you would do them. Ink on the card's own
+            gold rather than a third fill, so Buy stays the one bright pill
+            and the row does not read as three equal shouts. */}
         {KASH_SEND_ENABLED ? (
           <button
             onClick={onSend}

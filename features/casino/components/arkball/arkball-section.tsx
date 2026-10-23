@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { GameGoLive } from "@/features/casino/components/broadcast/go-live-panel";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// import { GameGoLive } from "@/features/casino/components/broadcast/go-live-panel";
 import { DrawOverview } from "@/features/casino/components/arkball/draw-overview";
 import { TicketBuilder } from "@/features/casino/components/arkball/ticket-builder";
 import { TicketHistory } from "@/features/casino/components/arkball/ticket-history";
@@ -112,11 +113,12 @@ export function ArkBallSection() {
             purchasePhase={lottery.purchasePhase}
           />
           <div className="space-y-4">
-            {/* A draw is public, so anyone watching it can stream it. The
+            {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+                A draw is public, so anyone watching it can stream it. The
                 surface moves (the countdown, then the balls), so it is
                 published for framerate rather than for a still's sharpness.
                 The copy here is English while the rest of the page is
-                translated: the panel carries no message catalogue yet. */}
+                translated: the panel carries no message catalogue yet.
             <GameGoLive
               target={{
                 game: "arkball",
@@ -133,7 +135,7 @@ export function ArkBallSection() {
                   "This draw has closed. End the broadcast so you are not streaming a finished draw.",
               }}
               activityOver={current.status !== "open"}
-            />
+            /> */}
             <div className="rounded-[20px] border border-white/8 bg-white/[0.03] p-4">
               <div className="text-[10px] font-semibold tracking-[0.13em] text-white/38 uppercase">
                 {t("drawIntegrity")}

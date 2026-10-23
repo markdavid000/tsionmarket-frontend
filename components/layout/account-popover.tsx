@@ -14,14 +14,17 @@ import Link from "next/link";
 // which mounts the whole Privy SDK. The row itself is light; the sheet is not,
 // so only the sheet is deferred — and this popover is mounted on every route.
 import { MoveOldMoneyButton } from "@/features/migrate/components/move-old-money-entry";
-import { HelpIcon, ShineIcon, SignOutIcon } from "@/components/ui/icons";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// The import was: { HelpIcon, ShineIcon, SignOutIcon }.
+import { HelpIcon, SignOutIcon } from "@/components/ui/icons";
 import { openSupportChat } from "@/lib/support-chat/open";
 import { toast } from "@/lib/toast";
 import { openMigration } from "@/features/migrate/lib/migration-card-store";
 
 interface AccountPopoverProps {
-  /** Opens the Shine sheet. Hosted by the sidebar, so it outlives this menu. */
-  onOpenShine: () => void;
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // Opens the Shine sheet. Hosted by the sidebar, so it outlives this menu.
+  // onOpenShine: () => void;
   open: boolean;
   onClose: () => void;
   triggerRef: React.RefObject<HTMLElement | null>;
@@ -69,7 +72,9 @@ function InviteIcon({ size = 18 }: { size?: number }) {
   );
 }
 
-export function AccountPopover({ open, onClose, triggerRef, onOpenShine }: AccountPopoverProps) {
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// The props were: { open, onClose, triggerRef, onOpenShine }.
+export function AccountPopover({ open, onClose, triggerRef }: AccountPopoverProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
   const t = useTranslations("account");
   const { profile, logout: sessionLogout } = useAuthSession();
@@ -197,9 +202,10 @@ export function AccountPopover({ open, onClose, triggerRef, onOpenShine }: Accou
                 className={itemClass}
               />
 
-              {/* Shine, in the one place it lives now. It used to be a card on
+              {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+                  Shine, in the one place it lives now. It used to be a card on
                   each of the seven service pages; this is the door to all
-                  seven. */}
+                  seven.
               <button
                 type="button"
                 role="menuitem"
@@ -214,6 +220,7 @@ export function AccountPopover({ open, onClose, triggerRef, onOpenShine }: Accou
                 </span>
                 <span>{t("shine")}</span>
               </button>
+              */}
 
               {/* The in-app chat, not a form in a new tab: support is a
                   conversation the shell already carries. */}

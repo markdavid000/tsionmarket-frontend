@@ -6,7 +6,8 @@ import { guardNavigation } from "@/lib/navigation-guard";
 import { ClockIcon } from "@/components/ui/icons";
 import type { SectionId } from "@/lib/sections";
 import type { NavItem } from "@/components/layout/nav-items";
-import { openSquareZone } from "@/lib/square-zone";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// import { openSquareZone } from "@/lib/square-zone";
 
 // The five icons, lifted straight from the Figma art (node 104:2688) so the
 // glyphs match the dome exactly. Each keeps the art's own coordinates as its
@@ -45,39 +46,40 @@ function MarketIcon({ size = 24 }: IconProps) {
   );
 }
 
-// Market Square is drawn as a little sheened ID card in the comp, so it carries
-// its own fills rather than currentColor.
-function SquareIcon({ size = 26 }: IconProps) {
-  return (
-    <svg width={size} height={(size * 20) / 26} viewBox="188 19.5 26 20" fill="none">
-      <path
-        d="M203.229 20L189 21.7423V38.5845H203.52H213.973V21.7423L203.229 20Z"
-        fill="url(#dome_card_sheen)"
-      />
-      <path
-        d="M190.453 35.3902V23.7749L202.939 22.3229V37.7133L199.745 35.0998L190.453 35.3902Z"
-        fill="#1F1F1F"
-      />
-      <path
-        d="M198.525 28.1909C198.045 28.2244 197.669 28.6416 197.686 29.1222C197.703 29.603 198.105 29.9665 198.585 29.933C199.065 29.8993 199.441 29.4814 199.424 29.0007C199.407 28.5201 199.004 28.1574 198.525 28.1909ZM196.207 28.3539C195.727 28.3875 195.352 28.8045 195.368 29.2852C195.385 29.7658 195.788 30.1285 196.268 30.095C196.748 30.0615 197.123 29.6444 197.106 29.1637C197.09 28.6829 196.687 28.3203 196.207 28.3539ZM193.889 28.515C193.41 28.5487 193.034 28.9658 193.051 29.4463C193.068 29.927 193.47 30.2895 193.95 30.2561C194.43 30.2225 194.806 29.8056 194.789 29.3248C194.772 28.8442 194.369 28.4814 193.889 28.515Z"
-        fill="white"
-      />
-      <defs>
-        <linearGradient
-          id="dome_card_sheen"
-          x1="202.068"
-          y1="33.9384"
-          x2="216.006"
-          y2="33.9384"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop stopColor="#978EA5" />
-          <stop offset="0.171352" stopColor="white" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// // Market Square is drawn as a little sheened ID card in the comp, so it carries
+// // its own fills rather than currentColor.
+// function SquareIcon({ size = 26 }: IconProps) {
+//   return (
+//     <svg width={size} height={(size * 20) / 26} viewBox="188 19.5 26 20" fill="none">
+//       <path
+//         d="M203.229 20L189 21.7423V38.5845H203.52H213.973V21.7423L203.229 20Z"
+//         fill="url(#dome_card_sheen)"
+//       />
+//       <path
+//         d="M190.453 35.3902V23.7749L202.939 22.3229V37.7133L199.745 35.0998L190.453 35.3902Z"
+//         fill="#1F1F1F"
+//       />
+//       <path
+//         d="M198.525 28.1909C198.045 28.2244 197.669 28.6416 197.686 29.1222C197.703 29.603 198.105 29.9665 198.585 29.933C199.065 29.8993 199.441 29.4814 199.424 29.0007C199.407 28.5201 199.004 28.1574 198.525 28.1909ZM196.207 28.3539C195.727 28.3875 195.352 28.8045 195.368 29.2852C195.385 29.7658 195.788 30.1285 196.268 30.095C196.748 30.0615 197.123 29.6444 197.106 29.1637C197.09 28.6829 196.687 28.3203 196.207 28.3539ZM193.889 28.515C193.41 28.5487 193.034 28.9658 193.051 29.4463C193.068 29.927 193.47 30.2895 193.95 30.2561C194.43 30.2225 194.806 29.8056 194.789 29.3248C194.772 28.8442 194.369 28.4814 193.889 28.515Z"
+//         fill="white"
+//       />
+//       <defs>
+//         <linearGradient
+//           id="dome_card_sheen"
+//           x1="202.068"
+//           y1="33.9384"
+//           x2="216.006"
+//           y2="33.9384"
+//           gradientUnits="userSpaceOnUse"
+//         >
+//           <stop stopColor="#978EA5" />
+//           <stop offset="0.171352" stopColor="white" />
+//         </linearGradient>
+//       </defs>
+//     </svg>
+//   );
+// }
 
 function CasinoIcon({ size = 24 }: IconProps) {
   return (
@@ -140,14 +142,18 @@ interface Tab {
   ownColour?: boolean;
 }
 
-// The bar's five destinations, in their resting left-to-right order.
+// The bar's destinations, in their resting left-to-right order. There are four
+// while the square is hidden. The bar still has five seats: the active tab
+// takes the centre, the first two others sit to its left, and the one left
+// over takes the inner seat on the right, so the outer right seat stays empty.
 const TABS: Tab[] = [
   { key: "portfolio", label: "Home", section: "portfolio", Icon: PortfolioIcon },
   { key: "market", label: "Market", section: "spot", Icon: MarketIcon },
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
   // Its own page in the app (/square, ADR-2026-09-12), so it takes the
-  // "square" section and rides to the centre while the reader is there —
+  // "square" section and rides to the centre while the reader is there,
   // the same seat logic as every other tab, no longer an outbound link.
-  { key: "square", label: "Square", section: "square", Icon: SquareIcon, ownColour: true },
+  // { key: "square", label: "Square", section: "square", Icon: SquareIcon, ownColour: true },
   { key: "casino", label: "Arkade", section: "casino", Icon: CasinoIcon },
   { key: "activity", label: "Activity", section: "activity", Icon: ClockIcon },
 ];
@@ -194,13 +200,15 @@ export function CurvedTabBar({ items, activeSection, onNavigate }: CurvedTabBarP
       if (guardNavigation("/market")) return;
       router.push("/market");
     }
+    // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
     // The Square seat opens /square in this tab, exactly as the desktop rail's
     // entry does. /square is the Square's own app now (lib/square-zone), so it
     // is a full page load rather than a client transition.
-    else if (tab.key === "square") {
-      if (guardNavigation("/square")) return;
-      openSquareZone();
-    } else if (tab.key === "casino") onNavigate("casino");
+    // else if (tab.key === "square") {
+    //   if (guardNavigation("/square")) return;
+    //   openSquareZone();
+    // }
+    else if (tab.key === "casino") onNavigate("casino");
     else {
       if (guardNavigation("/activity")) return;
       router.push("/activity");

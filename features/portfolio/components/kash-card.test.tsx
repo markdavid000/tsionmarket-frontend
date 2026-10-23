@@ -52,7 +52,8 @@ const account = (over: Partial<KashAccount> = {}): KashAccount =>
 function renderCard() {
   render(
     <KashCard
-      onBuy={() => {}}
+      // Kash Buy hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+      // onBuy={() => {}}
       onSend={onSend}
       onConvert={() => {}}
       onHistory={() => {}}
@@ -152,13 +153,24 @@ describe("KashCard actions", () => {
     sendFlag.enabled = true;
   });
 
-  it("puts Send between Buy and Convert", () => {
+  // Kash Buy hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // it("puts Send between Buy and Convert", () => {
+  //   renderCard();
+  //   const labels = screen
+  //     .getAllByRole("button")
+  //     .map((b) => b.textContent?.trim())
+  //     .filter((label) => label === "Buy" || label === "Send" || label === "Convert");
+  //   expect(labels).toEqual(["Buy", "Send", "Convert"]);
+  // });
+
+  it("shows Send then Convert, and no Buy pill", () => {
     renderCard();
     const labels = screen
       .getAllByRole("button")
       .map((b) => b.textContent?.trim())
       .filter((label) => label === "Buy" || label === "Send" || label === "Convert");
-    expect(labels).toEqual(["Buy", "Send", "Convert"]);
+    expect(labels).toEqual(["Send", "Convert"]);
+    expect(screen.queryByRole("button", { name: "Buy" })).toBeNull();
   });
 
   it("opens the send modal from the button", () => {
@@ -172,9 +184,13 @@ describe("KashCard actions", () => {
       sendFlag.enabled = false;
     });
 
-    it("offers Buy and Convert, and no way to send", () => {
+    // Kash Buy hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+    // The test was "offers Buy and Convert, and no way to send", and also
+    // asserted the Buy pill was there:
+    // expect(screen.getByRole("button", { name: "Buy" })).toBeInTheDocument();
+    it("offers Convert, and no way to buy or send", () => {
       renderCard();
-      expect(screen.getByRole("button", { name: "Buy" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Buy" })).toBeNull();
       expect(screen.getByRole("button", { name: "Convert" })).toBeInTheDocument();
       expect(screen.queryByRole("button", { name: "Send" })).toBeNull();
     });

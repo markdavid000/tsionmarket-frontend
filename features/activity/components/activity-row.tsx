@@ -1,21 +1,26 @@
 "use client";
 
-import { useState } from "react";
-
-import { ShareToSquare, type ShareDraft } from "@/components/share/share-to-square";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// useState only held the share sheet's open flag.
+// import { useState } from "react";
+//
+// import { ShareToSquare, type ShareDraft } from "@/components/share/share-to-square";
 import { useTranslations } from "next-intl";
 import { AssetIcon } from "@/components/ui/asset-icon";
 import { NetworkIcon } from "@/components/ui/network-icon";
 import { DiceIcon } from "@/components/ui/icons";
 import { useMoney } from "@/components/ui/currency-select";
-import {
-  gameForKind,
-  isDrawKind,
-  isGameKind,
-  isStable,
-  type ActivityEntry,
-} from "@/lib/activity/entries";
-import { encodeGameRef } from "@/lib/broadcast/deep-link";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// gameForKind only fed the game row's share draft.
+// import {
+//   gameForKind,
+//   isDrawKind,
+//   isGameKind,
+//   isStable,
+//   type ActivityEntry,
+// } from "@/lib/activity/entries";
+// import { encodeGameRef } from "@/lib/broadcast/deep-link";
+import { isDrawKind, isGameKind, isStable, type ActivityEntry } from "@/lib/activity/entries";
 import { tokenBg } from "@/lib/trade/assets";
 import { displayNetwork, displaySymbol } from "@/lib/buy";
 import { formatQty, truncateAddress } from "@/lib/format";
@@ -80,41 +85,47 @@ export function dayHeading(ms: number, t: Translate): string {
 // draw refunds the stake, so it shows no signed amount. No block-explorer link,
 // because there is no on-chain transaction.
 function GameRow({ item }: { item: ActivityEntry }) {
-  const [sharing, setSharing] = useState(false);
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // const [sharing, setSharing] = useState(false);
   const t = useTranslations("activity");
   const money = useMoney();
   const incoming = item.direction === "in";
   const draw = isDrawKind(item.kind);
   const opponent = item.counterparty ? truncateAddress(item.counterparty) : null;
-  const title = t(item.kind);
-
-  // A played game is the most shareable thing on the platform, and it was the
-  // one activity kind with no share control at all. Game entries carry the
-  // match id in `hash` (there is no on-chain transaction), so the link points
-  // at the match rather than at the casino index.
-  const game = gameForKind(item.kind);
-  const shareDraft: ShareDraft | null = game
-    ? {
-        title,
-        subtitle: [
-          draw ? t("refunded") : `${incoming ? "+" : "\u2212"}${money.format(item.amount)}`,
-          opponent ? `${t("vs")} ${opponent}` : null,
-        ]
-          .filter(Boolean)
-          .join(" · "),
-        deepLink: { kind: "game", ref: encodeGameRef(game, item.hash) },
-        suggestedText: "",
-        // A game stake is money like any other, so it stays behind the same
-        // opt-in the trade rows use rather than riding along in the card.
-        amount: money.format(item.amount),
-      }
-    : null;
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // const title = t(item.kind);
+  //
+  // // A played game is the most shareable thing on the platform, and it was the
+  // // one activity kind with no share control at all. Game entries carry the
+  // // match id in `hash` (there is no on-chain transaction), so the link points
+  // // at the match rather than at the casino index.
+  // const game = gameForKind(item.kind);
+  // const shareDraft: ShareDraft | null = game
+  //   ? {
+  //       title,
+  //       subtitle: [
+  //         draw ? t("refunded") : `${incoming ? "+" : "\u2212"}${money.format(item.amount)}`,
+  //         opponent ? `${t("vs")} ${opponent}` : null,
+  //       ]
+  //         .filter(Boolean)
+  //         .join(" · "),
+  //       deepLink: { kind: "game", ref: encodeGameRef(game, item.hash) },
+  //       suggestedText: "",
+  //       // A game stake is money like any other, so it stays behind the same
+  //       // opt-in the trade rows use rather than riding along in the card.
+  //       amount: money.format(item.amount),
+  //     }
+  //   : null;
 
   return (
     <div className="group relative">
       <div
         title={fullTimestamp(item.timestamp)}
-        className="grid grid-cols-[1fr_auto] items-center gap-3 border-t border-white/6 py-3.5 pr-[60px] pl-4 first:border-t-0 sm:pr-16 sm:pl-6"
+        // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+        // The right gutter was reserved for the share button, so the row pads
+        // both sides the same now.
+        // className="grid grid-cols-[1fr_auto] items-center gap-3 border-t border-white/6 py-3.5 pr-[60px] pl-4 first:border-t-0 sm:pr-16 sm:pl-6"
+        className="grid grid-cols-[1fr_auto] items-center gap-3 border-t border-white/6 py-3.5 pr-4 pl-4 first:border-t-0 sm:pr-6 sm:pl-6"
       >
         <div className="flex min-w-0 items-center gap-3">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-white/8 text-white/80">
@@ -141,16 +152,19 @@ function GameRow({ item }: { item: ActivityEntry }) {
           </div>
         </div>
       </div>
+      {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
       {shareDraft ? <ShareButton label={title} onClick={() => setSharing(true)} /> : null}
       {sharing && shareDraft ? (
         <ShareToSquare draft={shareDraft} open onClose={() => setSharing(false)} />
       ) : null}
+      */}
     </div>
   );
 }
 
 export function ActivityRow({ item, priceUsd }: { item: ActivityEntry; priceUsd: number }) {
-  const [sharing, setSharing] = useState(false);
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // const [sharing, setSharing] = useState(false);
   const t = useTranslations("activity");
   const money = useMoney();
   if (isGameKind(item.kind)) return <GameRow item={item} />;
@@ -180,17 +194,18 @@ export function ActivityRow({ item, priceUsd }: { item: ActivityEntry; priceUsd:
         }`
       : null;
 
-  // A past transaction is the easiest thing to share, and the row is already
-  // an anchor to the explorer — so the share control is a SIBLING of that
-  // link, never nested inside it: a button inside an anchor is invalid and
-  // swallows the tap on touch.
-  const shareDraft: ShareDraft = {
-    title,
-    subtitle: `${primary}${counter ? ` · ${counter}` : ""}`,
-    deepLink: { kind: "trade", ref: `${item.network}:${item.hash}` },
-    suggestedText: "",
-    amount: value > 0 ? money.format(value) : undefined,
-  };
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // // A past transaction is the easiest thing to share, and the row is already
+  // // an anchor to the explorer — so the share control is a SIBLING of that
+  // // link, never nested inside it: a button inside an anchor is invalid and
+  // // swallows the tap on touch.
+  // const shareDraft: ShareDraft = {
+  //   title,
+  //   subtitle: `${primary}${counter ? ` · ${counter}` : ""}`,
+  //   deepLink: { kind: "trade", ref: `${item.network}:${item.hash}` },
+  //   suggestedText: "",
+  //   amount: value > 0 ? money.format(value) : undefined,
+  // };
 
   return (
     <div className="group relative">
@@ -200,7 +215,11 @@ export function ActivityRow({ item, priceUsd }: { item: ActivityEntry; priceUsd:
         target="_blank"
         rel="noopener noreferrer"
         title={fullTimestamp(item.timestamp)}
-        className="grid grid-cols-[1fr_auto] items-center gap-3 border-t border-white/6 py-3.5 pr-[60px] pl-4 transition-colors first:border-t-0 hover:bg-white/4 sm:pr-16 sm:pl-6"
+        // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+        // The right gutter was reserved for the share button, so the row pads
+        // both sides the same now.
+        // className="grid grid-cols-[1fr_auto] items-center gap-3 border-t border-white/6 py-3.5 pr-[60px] pl-4 transition-colors first:border-t-0 hover:bg-white/4 sm:pr-16 sm:pl-6"
+        className="grid grid-cols-[1fr_auto] items-center gap-3 border-t border-white/6 py-3.5 pr-4 pl-4 transition-colors first:border-t-0 hover:bg-white/4 sm:pr-6 sm:pl-6"
       >
         <div className="flex min-w-0 items-center gap-3">
           <span className="relative shrink-0">
@@ -233,40 +252,44 @@ export function ActivityRow({ item, priceUsd }: { item: ActivityEntry; priceUsd:
           </div>
         </div>
       </a>
+      {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
       <ShareButton label={title} onClick={() => setSharing(true)} />
       {sharing ? <ShareToSquare draft={shareDraft} open onClose={() => setSharing(false)} /> : null}
+      */}
     </div>
   );
 }
 
-// Visible by default rather than on hover: there is no hover on touch, and an
-// invisible control made sharing a desktop-only feature by accident. The hit
-// area is 44px on touch, and the row reserves a gutter for it (see the row
-// padding above) so it sits beside the amount instead of on top of it.
-function ShareButton({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={`Share ${label} to Market Square`}
-      className="absolute top-1/2 right-2 grid size-11 -translate-y-1/2 cursor-pointer place-items-center rounded-full border border-white/10 bg-white/5 text-white/55 transition-colors hover:border-white/20 hover:bg-white/12 hover:text-white focus-visible:border-white/25 focus-visible:bg-white/12 focus-visible:text-white sm:right-3 sm:size-9"
-    >
-      <ShareGlyph />
-    </button>
-  );
-}
-
-/** Outward arrow: sharing OUT of Ark, into the square. */
-function ShareGlyph() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M12 16V4m0 0L8 8m4-4l4 4M5 15v3a2 2 0 002 2h10a2 2 0 002-2v-3"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// The share button and its glyph have no render site while the square is hidden.
+// // Visible by default rather than on hover: there is no hover on touch, and an
+// // invisible control made sharing a desktop-only feature by accident. The hit
+// // area is 44px on touch, and the row reserves a gutter for it (see the row
+// // padding above) so it sits beside the amount instead of on top of it.
+// function ShareButton({ label, onClick }: { label: string; onClick: () => void }) {
+//   return (
+//     <button
+//       type="button"
+//       onClick={onClick}
+//       aria-label={`Share ${label} to Market Square`}
+//       className="absolute top-1/2 right-2 grid size-11 -translate-y-1/2 cursor-pointer place-items-center rounded-full border border-white/10 bg-white/5 text-white/55 transition-colors hover:border-white/20 hover:bg-white/12 hover:text-white focus-visible:border-white/25 focus-visible:bg-white/12 focus-visible:text-white sm:right-3 sm:size-9"
+//     >
+//       <ShareGlyph />
+//     </button>
+//   );
+// }
+//
+// /** Outward arrow: sharing OUT of Ark, into the square. */
+// function ShareGlyph() {
+//   return (
+//     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
+//       <path
+//         d="M12 16V4m0 0L8 8m4-4l4 4M5 15v3a2 2 0 002 2h10a2 2 0 002-2v-3"
+//         stroke="currentColor"
+//         strokeWidth="1.8"
+//         strokeLinecap="round"
+//         strokeLinejoin="round"
+//       />
+//     </svg>
+//   );
+// }

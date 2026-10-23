@@ -39,10 +39,11 @@ const WithdrawModal = dynamic(
   () => import("@/features/funds/components/withdraw-modal").then((m) => m.WithdrawModal),
   { ssr: false, loading: () => <ModalLoading /> }
 );
-const ShineScreen = dynamic(
-  () => import("@/components/shine/shine-screen").then((m) => m.ShineScreen),
-  { ssr: false, loading: () => <ModalLoading /> }
-);
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// const ShineScreen = dynamic(
+//   () => import("@/components/shine/shine-screen").then((m) => m.ShineScreen),
+//   { ssr: false, loading: () => <ModalLoading /> }
+// );
 const BuySheet = dynamic(
   () => import("@/features/trade/components/buy-sheet").then((m) => m.BuySheet),
   { ssr: false, loading: () => <ModalLoading /> }
@@ -172,12 +173,16 @@ interface AppModalHostProps {
 // resets by unmounting when the sheet closes, rather than by an effect that
 // writes state during render.
 function AccountScreens({ onClose }: { onClose: () => void }) {
-  const [shineOpen, setShineOpen] = useState(false);
-  return shineOpen ? (
-    <ShineScreen onBack={() => setShineOpen(false)} />
-  ) : (
-    <AccountModal onClose={onClose} onOpenShine={() => setShineOpen(true)} />
-  );
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // While Shine is hidden the account sheet has no sub-view, so it renders
+  // the account modal alone. To restore, swap the return below for this one.
+  // const [shineOpen, setShineOpen] = useState(false);
+  // return shineOpen ? (
+  //   <ShineScreen onBack={() => setShineOpen(false)} />
+  // ) : (
+  //   <AccountModal onClose={onClose} onOpenShine={() => setShineOpen(true)} />
+  // );
+  return <AccountModal onClose={onClose} />;
 }
 
 export function AppModalHost({ active, onClose, onConfirmed, onOpenFunds }: AppModalHostProps) {

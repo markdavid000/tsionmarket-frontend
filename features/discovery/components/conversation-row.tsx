@@ -9,16 +9,19 @@ import {
   KickerIcon,
   artLayer,
 } from "@/features/discovery/components/conversation-card";
-import {
-  FeedCard,
-  GoLiveCard,
-  SquareCard,
-} from "@/features/discovery/components/conversation-cards";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// import {
+//   FeedCard,
+//   GoLiveCard,
+//   SquareCard,
+// } from "@/features/discovery/components/conversation-cards";
 import { DiscoveryRow } from "@/features/discovery/components/discovery-row";
-import { useLiveConversations } from "@/features/discovery/hooks/use-live-conversations";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// import { useLiveConversations } from "@/features/discovery/hooks/use-live-conversations";
 import type { SpaceSpot } from "@/features/discovery/types";
 import { useRotatingIndex } from "@/hooks/use-rotating-index";
-import { MARKET_SQUARE_HIDDEN, marketSquareHref } from "@/lib/market-square";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// import { MARKET_SQUARE_HIDDEN, marketSquareHref } from "@/lib/market-square";
 
 interface ChessRoomCardProps {
   room: SpaceSpot;
@@ -76,6 +79,10 @@ function ChessRoomCard({ room, onHold }: ChessRoomCardProps) {
 // The chess room and the square room both rotate through whatever is live. The
 // rotations are owned here rather than on the cards because the carousel draws
 // each slide more than once and every copy must show the same room.
+//
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// While the square is hidden the row carries the chess room alone and its
+// heading goes to the chess lobby.
 export function ConversationRow({ spaces = [] }: { spaces?: readonly SpaceSpot[] }) {
   const t = useTranslations("discovery");
 
@@ -100,20 +107,26 @@ export function ConversationRow({ spaces = [] }: { spaces?: readonly SpaceSpot[]
   const rooms = spaces.length > 0 ? spaces : [chessRoom];
   const room = rooms[useRotatingIndex(rooms.length, { paused })];
 
-  const conversations = useLiveConversations();
-  const conversation = conversations[useRotatingIndex(conversations.length, { paused })] ?? null;
-  const hosts = conversations.flatMap((live) => live.avatars).slice(0, 6);
-  const squareHome = marketSquareHref();
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // The chess room's rotation is the first useRotatingIndex call above and
+  // keeps its own state, so dropping this second call does not move it.
+  // const conversations = useLiveConversations();
+  // const conversation = conversations[useRotatingIndex(conversations.length, { paused })] ?? null;
+  // const hosts = conversations.flatMap((live) => live.avatars).slice(0, 6);
+  // const squareHome = marketSquareHref();
 
   return (
-    <DiscoveryRow title={t("conversationTitle")} href={squareHome ?? "/casino/chess"}>
+    // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+    // The heading went to the square: href={squareHome ?? "/casino/chess"}
+    <DiscoveryRow title={t("conversationTitle")} href="/casino/chess">
       <Carousel label={t("conversationCarousel")} gapPx={20} trimPx={50}>
         <ChessRoomCard room={room} onHold={hold} />
-        {/* A hidden square has no rooms and no deployment to link to, so its
-            cards go rather than standing with dead pills. */}
-        {/* An array rather than a fragment: the carousel counts its children
-            to make slides, and a fragment would be one slide with three cards
-            stacked inside it. */}
+        {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+        A hidden square has no rooms and no deployment to link to, so its
+        cards go rather than standing with dead pills.
+        An array rather than a fragment: the carousel counts its children
+        to make slides, and a fragment would be one slide with three cards
+        stacked inside it.
         {!MARKET_SQUARE_HIDDEN && squareHome !== null
           ? [
               <SquareCard key="rooms" room={conversation} avatars={hosts} onHold={hold} />,
@@ -121,6 +134,7 @@ export function ConversationRow({ spaces = [] }: { spaces?: readonly SpaceSpot[]
               <FeedCard key="feed" onHold={hold} />,
             ]
           : null}
+        */}
       </Carousel>
     </DiscoveryRow>
   );

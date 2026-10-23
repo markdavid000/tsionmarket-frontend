@@ -176,9 +176,15 @@ describe("ActivityDetailSheet content", () => {
 });
 
 describe("ActivityDetailSheet actions", () => {
-  it("offers both actions for a chain transfer", () => {
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // it("offers both actions for a chain transfer", () => {
+  //   renderSheet(feedItem());
+  //   expect(screen.getByRole("button", { name: "Share to Market Square" })).toBeInTheDocument();
+  it("offers only the explorer link for a chain transfer while sharing is hidden", () => {
     renderSheet(feedItem());
-    expect(screen.getByRole("button", { name: "Share to Market Square" })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Share to Market Square" })
+    ).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "View on Base" })).toBeInTheDocument();
   });
 
@@ -191,25 +197,35 @@ describe("ActivityDetailSheet actions", () => {
     expect(link).toHaveAttribute("rel", expect.stringContaining("noreferrer"));
   });
 
-  it("keeps the share control a sibling of the explorer anchor, never inside it", () => {
-    renderSheet(feedItem());
-    const link = screen.getByRole("link", { name: "View on Base" });
-    const share = screen.getByRole("button", { name: "Share to Market Square" });
-    expect(link).not.toContainElement(share);
-    expect(share).not.toContainElement(link);
-    expect(link.parentElement).toBe(share.parentElement);
-  });
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // it("keeps the share control a sibling of the explorer anchor, never inside it", () => {
+  //   renderSheet(feedItem());
+  //   const link = screen.getByRole("link", { name: "View on Base" });
+  //   const share = screen.getByRole("button", { name: "Share to Market Square" });
+  //   expect(link).not.toContainElement(share);
+  //   expect(share).not.toContainElement(link);
+  //   expect(link.parentElement).toBe(share.parentElement);
+  // });
 
   it("renders no explorer button at all for a chain with no explorer", () => {
     // Absent, not disabled and not a dead anchor: there is nothing to open.
     renderSheet(feedItem({ onChain: { network: "gensyn-mainnet", hash: HASH } }));
     expect(screen.queryByRole("link")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Share to Market Square" })).toBeInTheDocument();
+    // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+    // expect(screen.getByRole("button", { name: "Share to Market Square" })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Share to Market Square" })
+    ).not.toBeInTheDocument();
   });
 
   it("renders no explorer button for an off-chain game, which has no transaction", () => {
     renderSheet(gameItem());
     expect(screen.queryByRole("link")).not.toBeInTheDocument();
+    // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+    // A played game used to offer the share button here.
+    expect(
+      screen.queryByRole("button", { name: "Share to Market Square" })
+    ).not.toBeInTheDocument();
   });
 
   it("shows the event with no actions at all when it has neither reference", () => {
@@ -222,66 +238,68 @@ describe("ActivityDetailSheet actions", () => {
   });
 });
 
-describe("ActivityDetailSheet sharing", () => {
-  it("shares a transfer through its transaction, as network:hash", () => {
-    renderSheet(feedItem());
-    fireEvent.click(screen.getByRole("button", { name: "Share to Market Square" }));
-    const sheet = screen.getByTestId("share-sheet");
-    expect(sheet).toHaveAttribute("data-kind", "trade");
-    expect(sheet).toHaveAttribute("data-ref", `base-mainnet:${HASH}`);
-    expect(sheet).toHaveAttribute("data-title", "Sent USDC");
-  });
-
-  it("shares a played game through its match, never through a chain hash", () => {
-    renderSheet(gameItem());
-    fireEvent.click(screen.getByRole("button", { name: "Share to Market Square" }));
-    const sheet = screen.getByTestId("share-sheet");
-    expect(sheet).toHaveAttribute("data-kind", "game");
-    expect(sheet).toHaveAttribute("data-ref", "chess:match-9");
-    expect(sheet).toHaveAttribute("data-title", "Won chess");
-  });
-
-  it("keeps money out of the card the square shows, so it stays the opt-in", () => {
-    renderSheet(feedItem());
-    fireEvent.click(screen.getByRole("button", { name: "Share to Market Square" }));
-    expect(screen.getByTestId("share-sheet").getAttribute("data-subtitle")).not.toContain("250");
-  });
-
-  it("closes the share sheet without closing the detail behind it", () => {
-    const { onClose } = renderSheet(feedItem());
-    fireEvent.click(screen.getByRole("button", { name: "Share to Market Square" }));
-    fireEvent.click(screen.getByRole("button", { name: "Cancel share" }));
-    expect(screen.queryByTestId("share-sheet")).not.toBeInTheDocument();
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(onClose).not.toHaveBeenCalled();
-  });
-
-  it("leaves Escape to the share sheet while it is the surface on top", () => {
-    const { onClose } = renderSheet(feedItem());
-    fireEvent.click(screen.getByRole("button", { name: "Share to Market Square" }));
-    fireEvent.keyDown(window, { key: "Escape" });
-    expect(onClose).not.toHaveBeenCalled();
-  });
-});
-
-describe("ActivityDetailSheet reopening", () => {
-  it("does not reopen the share composer on the next row", () => {
-    // Sharing is local state, and the sheet is reused for every row rather than
-    // remounted per row. If that state outlived the item, opening any later row
-    // would drop the reader straight into a composer they never asked for,
-    // carrying the previous event's draft.
-    const { rerender } = renderSheet(feedItem());
-    fireEvent.click(screen.getByRole("button", { name: "Share to Market Square" }));
-    expect(screen.getByTestId("share-sheet")).toBeInTheDocument();
-
-    const show = (item: ActivityFeedItem | null) =>
-      rerender(
-        <NextIntlClientProvider locale="en" messages={messages}>
-          <ActivityDetailSheet item={item} onClose={vi.fn()} />
-        </NextIntlClientProvider>
-      );
-    show(null);
-    show(feedItem());
-    expect(screen.queryByTestId("share-sheet")).not.toBeInTheDocument();
-  });
-});
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// These cover the share sheet, which the detail no longer opens.
+// describe("ActivityDetailSheet sharing", () => {
+//   it("shares a transfer through its transaction, as network:hash", () => {
+//     renderSheet(feedItem());
+//     fireEvent.click(screen.getByRole("button", { name: "Share to Market Square" }));
+//     const sheet = screen.getByTestId("share-sheet");
+//     expect(sheet).toHaveAttribute("data-kind", "trade");
+//     expect(sheet).toHaveAttribute("data-ref", `base-mainnet:${HASH}`);
+//     expect(sheet).toHaveAttribute("data-title", "Sent USDC");
+//   });
+//
+//   it("shares a played game through its match, never through a chain hash", () => {
+//     renderSheet(gameItem());
+//     fireEvent.click(screen.getByRole("button", { name: "Share to Market Square" }));
+//     const sheet = screen.getByTestId("share-sheet");
+//     expect(sheet).toHaveAttribute("data-kind", "game");
+//     expect(sheet).toHaveAttribute("data-ref", "chess:match-9");
+//     expect(sheet).toHaveAttribute("data-title", "Won chess");
+//   });
+//
+//   it("keeps money out of the card the square shows, so it stays the opt-in", () => {
+//     renderSheet(feedItem());
+//     fireEvent.click(screen.getByRole("button", { name: "Share to Market Square" }));
+//     expect(screen.getByTestId("share-sheet").getAttribute("data-subtitle")).not.toContain("250");
+//   });
+//
+//   it("closes the share sheet without closing the detail behind it", () => {
+//     const { onClose } = renderSheet(feedItem());
+//     fireEvent.click(screen.getByRole("button", { name: "Share to Market Square" }));
+//     fireEvent.click(screen.getByRole("button", { name: "Cancel share" }));
+//     expect(screen.queryByTestId("share-sheet")).not.toBeInTheDocument();
+//     expect(screen.getByRole("dialog")).toBeInTheDocument();
+//     expect(onClose).not.toHaveBeenCalled();
+//   });
+//
+//   it("leaves Escape to the share sheet while it is the surface on top", () => {
+//     const { onClose } = renderSheet(feedItem());
+//     fireEvent.click(screen.getByRole("button", { name: "Share to Market Square" }));
+//     fireEvent.keyDown(window, { key: "Escape" });
+//     expect(onClose).not.toHaveBeenCalled();
+//   });
+// });
+//
+// describe("ActivityDetailSheet reopening", () => {
+//   it("does not reopen the share composer on the next row", () => {
+//     // Sharing is local state, and the sheet is reused for every row rather than
+//     // remounted per row. If that state outlived the item, opening any later row
+//     // would drop the reader straight into a composer they never asked for,
+//     // carrying the previous event's draft.
+//     const { rerender } = renderSheet(feedItem());
+//     fireEvent.click(screen.getByRole("button", { name: "Share to Market Square" }));
+//     expect(screen.getByTestId("share-sheet")).toBeInTheDocument();
+//
+//     const show = (item: ActivityFeedItem | null) =>
+//       rerender(
+//         <NextIntlClientProvider locale="en" messages={messages}>
+//           <ActivityDetailSheet item={item} onClose={vi.fn()} />
+//         </NextIntlClientProvider>
+//       );
+//     show(null);
+//     show(feedItem());
+//     expect(screen.queryByTestId("share-sheet")).not.toBeInTheDocument();
+//   });
+// });

@@ -23,7 +23,8 @@ import {
 } from "@/features/casino/components/last-standing/stage-card";
 import {
   RailActionCard,
-  RailCardFrame,
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // RailCardFrame,
   RailClaimCard,
   RailInviteCard,
   RailPager,
@@ -47,16 +48,17 @@ import { rememberRoundLength, secondsUntil } from "@/features/casino/lib/last-st
 import { GAME_ASSET, unitsToUsd, usdToUnits } from "@/features/casino/lib/last-standing/stake";
 import { followGame } from "@/features/casino/lib/last-standing/followed-game";
 import { useGameShare } from "@/features/casino/components/last-standing/share-game";
-import {
-  GameBroadcastProvider,
-  GoLivePanel,
-  isBroadcastOngoing,
-  type BroadcastCopy,
-} from "@/features/casino/components/broadcast";
-import {
-  useGameBroadcast,
-  type GameBroadcastTarget,
-} from "@/features/casino/hooks/use-game-broadcast";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// import {
+//   GameBroadcastProvider,
+//   GoLivePanel,
+//   isBroadcastOngoing,
+//   type BroadcastCopy,
+// } from "@/features/casino/components/broadcast";
+// import {
+//   useGameBroadcast,
+//   type GameBroadcastTarget,
+// } from "@/features/casino/hooks/use-game-broadcast";
 import type { TokenAmount } from "@/features/casino/lib/vault-api";
 
 // The shape the round visuals below consume, kept local now that the API
@@ -407,13 +409,14 @@ interface LastStandingSectionProps {
 /** Which rail card is on screen. The state decides which of these exist. */
 type RailCardId = "action" | "claim" | "invite" | "broadcast";
 
-// The copy the broadcast panel needs. It is English while the rest of the page
-// is translated: the panel carries no catalogue yet.
-const BROADCAST_COPY: BroadcastCopy = {
-  subject: "the arena",
-  finishedNotice:
-    "This game has settled. End the broadcast so you are not streaming a finished game.",
-};
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// // The copy the broadcast panel needs. It is English while the rest of the page
+// // is translated: the panel carries no catalogue yet.
+// const BROADCAST_COPY: BroadcastCopy = {
+//   subject: "the arena",
+//   finishedNotice:
+//     "This game has settled. End the broadcast so you are not streaming a finished game.",
+// };
 /** Which of the bottom panel's three tabs is open. */
 type PanelTab = "activity" | "rules";
 
@@ -526,23 +529,24 @@ export function LastStandingSection({ gameId, onAddFunds }: LastStandingSectionP
   // rail opens on the new state's first card, which is claim for a winner.
   const [railPick, setRailPick] = useState<{ card: RailCardId; roundOver: boolean } | null>(null);
 
-  // The broadcast lives up here rather than inside its panel: whether this
-  // session is streaming decides whether the rail offers the broadcast card
-  // at all once the round is over. The arena is all motion (the countdown,
-  // the pot, the coin flights), so it is published for framerate.
-  const broadcastTarget = useMemo<GameBroadcastTarget>(
-    () => ({
-      game: "last-standing",
-      ref: String(gameId),
-      title: `The Last Man: game ${gameId}`,
-      watchPath: `/casino/last-standing/${gameId}`,
-      descriptionLead: "Live on Ark. Outlast everyone:",
-      content: "motion",
-      creatorApplicationNote: "I play The Last Man on Ark and want to broadcast my games.",
-    }),
-    [gameId]
-  );
-  const broadcast = useGameBroadcast(broadcastTarget);
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // // The broadcast lives up here rather than inside its panel: whether this
+  // // session is streaming decides whether the rail offers the broadcast card
+  // // at all once the round is over. The arena is all motion (the countdown,
+  // // the pot, the coin flights), so it is published for framerate.
+  // const broadcastTarget = useMemo<GameBroadcastTarget>(
+  //   () => ({
+  //     game: "last-standing",
+  //     ref: String(gameId),
+  //     title: `The Last Man: game ${gameId}`,
+  //     watchPath: `/casino/last-standing/${gameId}`,
+  //     descriptionLead: "Live on Ark. Outlast everyone:",
+  //     content: "motion",
+  //     creatorApplicationNote: "I play The Last Man on Ark and want to broadcast my games.",
+  //   }),
+  //   [gameId]
+  // );
+  // const broadcast = useGameBroadcast(broadcastTarget);
 
   const reduce = useReducedMotion();
 
@@ -1422,19 +1426,27 @@ export function LastStandingSection({ gameId, onAddFunds }: LastStandingSectionP
   // the pager's length is the state's own answer to "what can I do here".
   const settleable = roundOver && game?.settled !== true;
   //
-  //   live round:  action, invite, broadcast
+  //   live round:  action, invite
   //   round over:  claim (when there is something to settle or collect),
-  //                invite, and broadcast only while this session is still
-  //                streaming, so a finished game's stream can be ended.
-  const broadcasting = isBroadcastOngoing(broadcast.phase);
+  //                invite
+  //
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // The broadcast card is hidden, so it no longer joins either list. Restoring
+  // it brings back these lines and the push below:
+  // //   live round:  action, invite, broadcast
+  // //   round over:  claim (when there is something to settle or collect),
+  // //                invite, and broadcast only while this session is still
+  // //                streaming, so a finished game's stream can be ended.
+  // const broadcasting = isBroadcastOngoing(broadcast.phase);
   const railCards: RailCardId[] = [];
   if (!roundOver && !!status) railCards.push("action");
   if (roundOver && (settleable || hasPending)) railCards.push("claim");
   // Always: a game is worth sharing whatever state it is in, and the starter
   // earns from everyone who joins through the link.
   railCards.push("invite");
-  // A game is public, so anyone in it can stream it.
-  if (!roundOver || broadcasting) railCards.push("broadcast");
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // // A game is public, so anyone in it can stream it.
+  // if (!roundOver || broadcasting) railCards.push("broadcast");
   const picked =
     railPick && railPick.roundOver === roundOver && railCards.includes(railPick.card)
       ? railPick.card
@@ -1792,9 +1804,10 @@ export function LastStandingSection({ gameId, onAddFunds }: LastStandingSectionP
                 />
               ) : null}
 
-              {/* Broadcast to Market Square. No frame of the design draws it,
+              {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+                  Broadcast to Market Square. No frame of the design draws it,
                   so it wears the rail's own shell and heading, and the panel
-                  goes in bare so there is one card edge, not two. */}
+                  goes in bare so there is one card edge, not two.
               {railCard === "broadcast" ? (
                 <RailCardFrame label={t("railBroadcastHeading")} footer={railPager}>
                   <div data-rail-card="broadcast">
@@ -1811,7 +1824,7 @@ export function LastStandingSection({ gameId, onAddFunds }: LastStandingSectionP
                     </GameBroadcastProvider>
                   </div>
                 </RailCardFrame>
-              ) : null}
+              ) : null} */}
             </div>
           </div>
         </div>

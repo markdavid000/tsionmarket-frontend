@@ -1,9 +1,13 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// useState only held the share sheet's open flag.
+// import { useId, useRef, useState } from "react";
+import { useId, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
-import { ShareToSquare, type ShareDraft } from "@/components/share/share-to-square";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// import { ShareToSquare, type ShareDraft } from "@/components/share/share-to-square";
 import { AssetIcon } from "@/components/ui/asset-icon";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { ModalShell } from "@/components/ui/modal-shell";
@@ -11,8 +15,9 @@ import { MODAL_PANEL_CLASS, useModalDismiss } from "@/components/ui/modal-trigge
 import { StatusChip } from "@/components/ui/status-chip";
 import { explorerTxHref, type ActivityFeedItem, type ActivityLabel } from "@/lib/activity/feed";
 import { fullTimestamp } from "@/lib/activity/time";
-import type { MarketSquareDeepLink } from "@/lib/api/market-square";
-import { encodeGameRef } from "@/lib/broadcast/deep-link";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// import type { MarketSquareDeepLink } from "@/lib/api/market-square";
+// import { encodeGameRef } from "@/lib/broadcast/deep-link";
 import { truncateAddress } from "@/lib/format";
 import { tokenBg } from "@/lib/trade/assets";
 import { networkLabel } from "@/lib/trade/networks";
@@ -41,57 +46,59 @@ function resolveLabel(label: ActivityLabel, t: Translate): string {
   return label.type === "message" ? t(label.key, label.values) : label.text;
 }
 
-/**
- * What the square links back to, or null when this event is not linkable.
- *
- * A row carries at most one of `onChain` and `game`. A played Arkade match
- * settles in the cashier ledger and has no transaction, so it shares through a
- * game deep link and the square routes the reader to the match; a transfer
- * shares through its chain and hash. An event with neither — a daily check-in,
- * a service-settled prediction — has nothing to point at, so it gets no share
- * control rather than one that posts a card leading nowhere.
- */
-function deepLinkFor(item: ActivityFeedItem): MarketSquareDeepLink | null {
-  if (item.game) {
-    // encodeGameRef refuses a blank id rather than minting "chess:", so an
-    // incomplete reference drops the control instead of throwing mid-render.
-    if (item.game.matchId.trim() === "") return null;
-    return { kind: "game", ref: encodeGameRef(item.game.game, item.game.matchId) };
-  }
-  if (item.onChain && item.onChain.hash !== "") {
-    return { kind: "trade", ref: `${item.onChain.network}:${item.onChain.hash}` };
-  }
-  return null;
-}
-
-/**
- * The share draft for an event.
- *
- * The money goes on `amount` and nowhere else. ShareDraft keeps the figure off
- * the card until the user ticks it in, and putting it in the subtitle as well
- * would publish a position size that the opt-in exists to protect. The subtitle
- * carries the context instead: who it was against, or what it was.
- *
- * The figure is `amountText`, the row's own formatter, rather than `useMoney`:
- * `format` takes a USD number, and both halves of that are wrong here. The
- * value is a plain decimal string that must never be `Number()`-ed (Checklist
- * 4), and the ticker is often not dollars at all — converting 23,500,000 PEPE
- * through an FX rate would print a figure that is simply false.
- */
-function shareDraftFor(
-  item: ActivityFeedItem,
-  deepLink: MarketSquareDeepLink,
-  title: string,
-  subtitle: string | undefined
-): ShareDraft {
-  return {
-    title,
-    ...(subtitle ? { subtitle } : {}),
-    deepLink,
-    suggestedText: "",
-    amount: amountText(item.amount),
-  };
-}
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// Both helpers only built the share draft.
+// /**
+//  * What the square links back to, or null when this event is not linkable.
+//  *
+//  * A row carries at most one of `onChain` and `game`. A played Arkade match
+//  * settles in the cashier ledger and has no transaction, so it shares through a
+//  * game deep link and the square routes the reader to the match; a transfer
+//  * shares through its chain and hash. An event with neither — a daily check-in,
+//  * a service-settled prediction — has nothing to point at, so it gets no share
+//  * control rather than one that posts a card leading nowhere.
+//  */
+// function deepLinkFor(item: ActivityFeedItem): MarketSquareDeepLink | null {
+//   if (item.game) {
+//     // encodeGameRef refuses a blank id rather than minting "chess:", so an
+//     // incomplete reference drops the control instead of throwing mid-render.
+//     if (item.game.matchId.trim() === "") return null;
+//     return { kind: "game", ref: encodeGameRef(item.game.game, item.game.matchId) };
+//   }
+//   if (item.onChain && item.onChain.hash !== "") {
+//     return { kind: "trade", ref: `${item.onChain.network}:${item.onChain.hash}` };
+//   }
+//   return null;
+// }
+//
+// /**
+//  * The share draft for an event.
+//  *
+//  * The money goes on `amount` and nowhere else. ShareDraft keeps the figure off
+//  * the card until the user ticks it in, and putting it in the subtitle as well
+//  * would publish a position size that the opt-in exists to protect. The subtitle
+//  * carries the context instead: who it was against, or what it was.
+//  *
+//  * The figure is `amountText`, the row's own formatter, rather than `useMoney`:
+//  * `format` takes a USD number, and both halves of that are wrong here. The
+//  * value is a plain decimal string that must never be `Number()`-ed (Checklist
+//  * 4), and the ticker is often not dollars at all — converting 23,500,000 PEPE
+//  * through an FX rate would print a figure that is simply false.
+//  */
+// function shareDraftFor(
+//   item: ActivityFeedItem,
+//   deepLink: MarketSquareDeepLink,
+//   title: string,
+//   subtitle: string | undefined
+// ): ShareDraft {
+//   return {
+//     title,
+//     ...(subtitle ? { subtitle } : {}),
+//     deepLink,
+//     suggestedText: "",
+//     amount: amountText(item.amount),
+//   };
+// }
 
 /** One "label — value" line in the detail's fact list. */
 function Fact({ label, value, title }: { label: string; value: string; title?: string }) {
@@ -122,35 +129,41 @@ export function ActivityDetailSheet({ item, onClose }: ActivityDetailSheetProps)
   // The stamp interpolates a month name; without the reader's locale it comes
   // back in the runtime's.
   const locale = useLocale();
-  const [sharing, setSharing] = useState(false);
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // const [sharing, setSharing] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
 
-  // Sharing belongs to the event being shared, and this sheet is reused for
-  // every row rather than remounted per row. Without this reset, a composer left
-  // open when the sheet closed would still be open the next time any row was
-  // tapped, carrying the previous event's draft.
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // With no share sheet there is nothing to reset per row, and nothing can sit
+  // on top of this sheet, so it always owns the keyboard while it is open.
+  // // Sharing belongs to the event being shared, and this sheet is reused for
+  // // every row rather than remounted per row. Without this reset, a composer left
+  // // open when the sheet closed would still be open the next time any row was
+  // // tapped, carrying the previous event's draft.
+  // //
+  // // Adjusted during render rather than in an effect: React re-runs this
+  // // component before committing, so the composer is never painted against the
+  // // wrong event, and an effect that sets state here would queue the cascading
+  // // second render the compiler warns about.
+  // const [shownItem, setShownItem] = useState(item);
+  // if (item !== shownItem) {
+  //   setShownItem(item);
+  //   setSharing(false);
+  // }
   //
-  // Adjusted during render rather than in an effect: React re-runs this
-  // component before committing, so the composer is never painted against the
-  // wrong event, and an effect that sets state here would queue the cascading
-  // second render the compiler warns about.
-  const [shownItem, setShownItem] = useState(item);
-  if (item !== shownItem) {
-    setShownItem(item);
-    setSharing(false);
-  }
-
-  // The share sheet opens on top of this one, so while it is up the keyboard
-  // belongs to it: trapping Tab in the surface underneath would strand a reader
-  // in a dialog they cannot see, and Escape would close the wrong thing.
-  useModalDismiss(item !== null && !sharing, onClose, panelRef);
+  // // The share sheet opens on top of this one, so while it is up the keyboard
+  // // belongs to it: trapping Tab in the surface underneath would strand a reader
+  // // in a dialog they cannot see, and Escape would close the wrong thing.
+  // useModalDismiss(item !== null && !sharing, onClose, panelRef);
+  useModalDismiss(item !== null, onClose, panelRef);
 
   const title = item ? resolveLabel(item.title, t) : "";
   const subtitle = item?.subtitle ? resolveLabel(item.subtitle, t) : undefined;
   const caption = item ? resolveLabel(item.caption.label, t) : "";
-  const deepLink = item ? deepLinkFor(item) : null;
-  const draft = item && deepLink ? shareDraftFor(item, deepLink, title, subtitle) : null;
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // const deepLink = item ? deepLinkFor(item) : null;
+  // const draft = item && deepLink ? shareDraftFor(item, deepLink, title, subtitle) : null;
   // Bound once so the narrowing survives into the link's handler: a `?? ""`
   // fallback inside the closure would be a value invented to satisfy the type
   // checker, which is exactly the shape of a masked defect.
@@ -241,6 +254,9 @@ export function ActivityDetailSheet({ item, onClose }: ActivityDetailSheetProps)
             {/* The two controls are SIBLINGS. The share control must never sit
                 inside the explorer anchor: a button inside an anchor is invalid
                 markup and swallows the tap on touch. */}
+            {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+                The explorer link is the only action left, so the row renders
+                only when there is an explorer to open.
             {draft || explorer ? (
               <div className="flex flex-col gap-3 sm:flex-row">
                 {draft ? (
@@ -252,6 +268,9 @@ export function ActivityDetailSheet({ item, onClose }: ActivityDetailSheetProps)
                     {t("detail.share")}
                   </button>
                 ) : null}
+            */}
+            {explorer ? (
+              <div className="flex flex-col gap-3 sm:flex-row">
                 {explorer && chain ? (
                   <a
                     data-sensitive="other"
@@ -272,12 +291,14 @@ export function ActivityDetailSheet({ item, onClose }: ActivityDetailSheetProps)
         ) : null}
       </ModalShell>
 
-      {/* A sibling of the shell, not a child of it: the square's composer is a
+      {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+          A sibling of the shell, not a child of it: the square's composer is a
           sheet in its own right and stacks above this one, the same way the old
-          row put it beside the row rather than inside its anchor. */}
+          row put it beside the row rather than inside its anchor.
       {sharing && draft ? (
         <ShareToSquare draft={draft} open onClose={() => setSharing(false)} />
       ) : null}
+      */}
     </>
   );
 }

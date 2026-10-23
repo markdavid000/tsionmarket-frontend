@@ -15,7 +15,8 @@ import {
 } from "@tanstack/react-table";
 import { BalanceCard } from "@/features/portfolio/components/balance-card";
 import { KashBanner } from "@/features/portfolio/components/kash-banner";
-import { MarketSquareBanner } from "@/features/portfolio/components/market-square-banner";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// import { MarketSquareBanner } from "@/features/portfolio/components/market-square-banner";
 import { KashCard } from "@/features/portfolio/components/kash-card";
 // The phone's portfolio head: a swipe carousel of the balance and Kash+ cards,
 // then a promo strip. Desktop keeps the side-by-side grid below.
@@ -26,7 +27,8 @@ import Link from "next/link";
 import { PromoCarousel } from "@/components/ui/promo-deck";
 import { PromoBanner, PromoRail } from "@/components/ui/promo-rail";
 import { ARKSTORE_URL, BRAND } from "@/lib/brand";
-import { marketSquareHref } from "@/lib/market-square";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// import { marketSquareHref } from "@/lib/market-square";
 import { SetTheStakeBanner } from "@/features/portfolio/components/set-the-stake-banner";
 import { ArkStoreBanner } from "@/features/portfolio/components/ark-store-banner";
 import { KashBuyModal } from "@/features/portfolio/components/kash-buy-modal";
@@ -282,8 +284,10 @@ export function PortfolioView({
   // destination there is no banner to draw, which is the rule the sidebar entry
   // follows too. `squareBanner` is the placeholder the duplicate stake banner
   // below was standing in for.
-  const squareHref = marketSquareHref();
-  const squareBanner = squareHref ? <MarketSquareBanner href={squareHref} /> : null;
+  //
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // const squareHref = marketSquareHref();
+  // const squareBanner = squareHref ? <MarketSquareBanner href={squareHref} /> : null;
 
   // The ArkStore ticket, first on both strips: the deck a phone swipes and the
   // rail the desk carries. The store is another deployment, so it is a plain
@@ -319,6 +323,11 @@ export function PortfolioView({
   // The stake banner, and the third rail stop it used to fill on its own. With
   // the square switched off there is still no Market Square banner, so it
   // repeats as it always did and the carousel keeps something to move to.
+  //
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // While the square is hidden the rail ends on the Kash banner instead. The
+  // repeat only ever stood in for the square's slot, and four distinct
+  // banners still give the carousel somewhere to move.
   const stakeBanner = (
     <PromoBanner
       href="/casino"
@@ -394,7 +403,8 @@ export function PortfolioView({
                 maskForMigration={maskForMigration}
               />
               <KashCardMobile
-                onBuy={() => setKashModal("buy")}
+                // Kash Buy hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+                // onBuy={() => setKashModal("buy")}
                 onSend={() => setKashModal("send")}
                 onConvert={() => setKashModal("convert")}
                 onHistory={() => setKashModal("history")}
@@ -421,7 +431,9 @@ export function PortfolioView({
             {/* The same banner the desk shows, not a flat export of it: its
                 words are real text in the app's own faces, and they translate. */}
             <KashBanner onBuy={() => setKashModal("buy")} />
+            {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
             {squareBanner}
+            */}
           </PromoCarousel>
         </div>
       </div>
@@ -437,7 +449,8 @@ export function PortfolioView({
           maskForMigration={maskForMigration}
         />
         <KashCard
-          onBuy={() => setKashModal("buy")}
+          // Kash Buy hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+          // onBuy={() => setKashModal("buy")}
           onSend={() => setKashModal("send")}
           onClaim={kashWallet ? () => claimPoints.mutate({ wallet: kashWallet }) : undefined}
           claiming={claimPoints.isPending}
@@ -456,7 +469,9 @@ export function PortfolioView({
           {arkIdBanner}
           {stakeBanner}
           <KashBanner onBuy={() => setKashModal("buy")} />
+          {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
           {squareBanner ?? stakeBanner}
+          */}
         </PromoRail>
       </div>
 
