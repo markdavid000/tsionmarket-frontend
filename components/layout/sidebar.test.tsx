@@ -55,6 +55,10 @@ vi.mock("@/hooks/use-ark-name", () => ({
 vi.mock("@/components/broadcast/go-live-control", () => ({
   GoLiveControl: () => <button type="button">Go Live</button>,
 }));
+// Rendered as a marked element so a test can tell whether the rail mounts it.
+vi.mock("@/components/shine/shine-sheet", () => ({
+  ShineSheet: () => <div data-testid="shine-sheet" />,
+}));
 // AccountPopover is now always mounted (it plays its own exit animation off
 // its `open` prop), which pulls in InviteFriendsModal and its react-query
 // hook. The rail's own markup is what is under test here, not the popover, so
@@ -181,91 +185,147 @@ describe("Sidebar", () => {
     expect(screen.getByRole("button", { name: "Portfolio" })).toBeInTheDocument();
   });
 
-  it("puts the entry back above the sections when the square is shown again", async () => {
-    vi.resetModules();
-    vi.doMock("@/lib/market-square", () => ({
-      MARKET_SQUARE_HIDDEN: false,
-      marketSquareHref: () => "https://square.test",
-    }));
-    const { Sidebar: Shown } = await import("./sidebar");
-    render(
-      <Shown
-        items={[{ id: "portfolio", label: "Portfolio", icon: () => null }]}
-        activeSection="portfolio"
-        onNavigate={() => {}}
-        open={false}
-        onClose={() => {}}
-      />
-    );
-    expect(screen.getByRole("link", { name: /^square$/i })).toHaveAttribute("href", "/square");
-  });
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // it("puts the entry back above the sections when the square is shown again", async () => {
+  //   vi.resetModules();
+  //   vi.doMock("@/lib/market-square", () => ({
+  //     MARKET_SQUARE_HIDDEN: false,
+  //     marketSquareHref: () => "https://square.test",
+  //   }));
+  //   const { Sidebar: Shown } = await import("./sidebar");
+  //   render(
+  //     <Shown
+  //       items={[{ id: "portfolio", label: "Portfolio", icon: () => null }]}
+  //       activeSection="portfolio"
+  //       onNavigate={() => {}}
+  //       open={false}
+  //       onClose={() => {}}
+  //     />
+  //   );
+  //   expect(screen.getByRole("link", { name: /^square$/i })).toHaveAttribute("href", "/square");
+  // });
 
-  /**
-   * The entry is a page in this app now, not a link out. It opens /square in
-   * the same tab like every other rail row; the outbound "Open the Square"
-   * lives on that page's header. And it lights up on its route the way the
-   * other rows do on theirs.
-   */
-  it("opens the Square page in the same tab, and lights up on it", async () => {
-    vi.resetModules();
-    vi.doMock("@/lib/market-square", () => ({
-      MARKET_SQUARE_HIDDEN: false,
-      marketSquareHref: () => "https://square.test",
-    }));
-    const { Sidebar: Shown } = await import("./sidebar");
-    render(
-      <Shown
-        items={[{ id: "portfolio", label: "Portfolio", icon: () => null }]}
-        activeSection="square"
-        onNavigate={() => {}}
-        open={false}
-        onClose={() => {}}
-      />
-    );
-    const entry = screen.getByRole("link", { name: /^square$/i });
-    expect(entry).toHaveAttribute("href", "/square");
-    expect(entry).not.toHaveAttribute("target");
-    expect(entry.className).toContain("bg-accent/14");
-    expect(screen.queryByRole("link", { name: /square\.test/ })).toBeNull();
-  });
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // /**
+  //  * The entry is a page in this app now, not a link out. It opens /square in
+  //  * the same tab like every other rail row; the outbound "Open the Square"
+  //  * lives on that page's header. And it lights up on its route the way the
+  //  * other rows do on theirs.
+  //  */
+  // it("opens the Square page in the same tab, and lights up on it", async () => {
+  //   vi.resetModules();
+  //   vi.doMock("@/lib/market-square", () => ({
+  //     MARKET_SQUARE_HIDDEN: false,
+  //     marketSquareHref: () => "https://square.test",
+  //   }));
+  //   const { Sidebar: Shown } = await import("./sidebar");
+  //   render(
+  //     <Shown
+  //       items={[{ id: "portfolio", label: "Portfolio", icon: () => null }]}
+  //       activeSection="square"
+  //       onNavigate={() => {}}
+  //       open={false}
+  //       onClose={() => {}}
+  //     />
+  //   );
+  //   const entry = screen.getByRole("link", { name: /^square$/i });
+  //   expect(entry).toHaveAttribute("href", "/square");
+  //   expect(entry).not.toHaveAttribute("target");
+  //   expect(entry.className).toContain("bg-accent/14");
+  //   expect(screen.queryByRole("link", { name: /square\.test/ })).toBeNull();
+  // });
 
-  /**
-   * The shipped configuration: the square's deployment is configured and open,
-   * so the rail links out to it, while the square's own sections inside the
-   * app are off. The two are separate switches, and this asserts the rail
-   * reads only the first. Gating the rail on the sections switch would take
-   * the entry away with them, which is the state this replaced.
-   */
-  it("keeps the rail entry while the square's in-app sections are hidden", async () => {
-    vi.resetModules();
-    vi.doMock("@/lib/market-square", () => ({
-      MARKET_SQUARE_HIDDEN: false,
-      SQUARE_SECTIONS_HIDDEN: true,
-      marketSquareHref: () => "https://square.test",
-    }));
-    const { Sidebar: Shown } = await import("./sidebar");
-    render(
-      <Shown
-        items={[{ id: "portfolio", label: "Portfolio", icon: () => null }]}
-        activeSection="portfolio"
-        onNavigate={() => {}}
-        open={false}
-        onClose={() => {}}
-      />
-    );
-    expect(screen.getByRole("link", { name: /^square$/i })).toHaveAttribute("href", "/square");
-  });
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // /**
+  //  * The shipped configuration: the square's deployment is configured and open,
+  //  * so the rail links out to it, while the square's own sections inside the
+  //  * app are off. The two are separate switches, and this asserts the rail
+  //  * reads only the first. Gating the rail on the sections switch would take
+  //  * the entry away with them, which is the state this replaced.
+  //  */
+  // it("keeps the rail entry while the square's in-app sections are hidden", async () => {
+  //   vi.resetModules();
+  //   vi.doMock("@/lib/market-square", () => ({
+  //     MARKET_SQUARE_HIDDEN: false,
+  //     SQUARE_SECTIONS_HIDDEN: true,
+  //     marketSquareHref: () => "https://square.test",
+  //   }));
+  //   const { Sidebar: Shown } = await import("./sidebar");
+  //   render(
+  //     <Shown
+  //       items={[{ id: "portfolio", label: "Portfolio", icon: () => null }]}
+  //       activeSection="portfolio"
+  //       onNavigate={() => {}}
+  //       open={false}
+  //       onClose={() => {}}
+  //     />
+  //   );
+  //   expect(screen.getByRole("link", { name: /^square$/i })).toHaveAttribute("href", "/square");
+  // });
 
-  /**
-   * The 2.0 rail seats the square between Prediction and Arkade rather than in
-   * a promoted block of its own, so its position is part of the design and is
-   * asserted against the rendered order, not against the markup that produces
-   * it.
-   */
-  it("seats the square between Prediction and Arkade", async () => {
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // /**
+  //  * The 2.0 rail seats the square between Prediction and Arkade rather than in
+  //  * a promoted block of its own, so its position is part of the design and is
+  //  * asserted against the rendered order, not against the markup that produces
+  //  * it.
+  //  */
+  // it("seats the square between Prediction and Arkade", async () => {
+  //   vi.resetModules();
+  //   vi.doMock("@/lib/market-square", () => ({
+  //     MARKET_SQUARE_HIDDEN: false,
+  //     marketSquareHref: () => "https://square.test",
+  //   }));
+  //   const { Sidebar: Shown } = await import("./sidebar");
+  //   const { container } = render(
+  //     <Shown
+  //       items={[
+  //         { id: "prediction", label: "Prediction", icon: () => null },
+  //         { id: "casino", label: "Arkade", icon: () => null },
+  //         { id: "activity", label: "Arktivity", icon: () => null },
+  //       ]}
+  //       activeSection="prediction"
+  //       onNavigate={() => {}}
+  //       open={false}
+  //       onClose={() => {}}
+  //     />
+  //   );
+  //   const rail = container.querySelector("nav");
+  //   if (rail === null) throw new Error("the rail rendered no nav element");
+  //   const rows = [...rail.children].map((el) => el.textContent);
+  //   expect(rows).toEqual(["Prediction", "Square", "Arkade", "Arktivity"]);
+  // });
+
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // // With no Arkade entry to sit above, the square must still appear rather
+  // // than fall out of the rail entirely.
+  // it("keeps the square in the rail when there is no Arkade entry", async () => {
+  //   vi.resetModules();
+  //   vi.doMock("@/lib/market-square", () => ({
+  //     MARKET_SQUARE_HIDDEN: false,
+  //     marketSquareHref: () => "https://square.test",
+  //   }));
+  //   const { Sidebar: Shown } = await import("./sidebar");
+  //   render(
+  //     <Shown
+  //       items={[{ id: "portfolio", label: "Portfolio", icon: () => null }]}
+  //       activeSection="portfolio"
+  //       onNavigate={() => {}}
+  //       open={false}
+  //       onClose={() => {}}
+  //     />
+  //   );
+  //   expect(screen.getByRole("link", { name: /^square$/i })).toBeInTheDocument();
+  // });
+
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // The rail drops the Square row, Go Live and the Shine sheet even with the
+  // square's own switch on, and the rows around the gap keep their order.
+  it("offers no Square row, Go Live or Shine sheet even with the square switched on", async () => {
     vi.resetModules();
     vi.doMock("@/lib/market-square", () => ({
       MARKET_SQUARE_HIDDEN: false,
+      SQUARE_SECTIONS_HIDDEN: false,
       marketSquareHref: () => "https://square.test",
     }));
     const { Sidebar: Shown } = await import("./sidebar");
@@ -276,37 +336,19 @@ describe("Sidebar", () => {
           { id: "casino", label: "Arkade", icon: () => null },
           { id: "activity", label: "Arktivity", icon: () => null },
         ]}
-        activeSection="prediction"
+        activeSection="square"
         onNavigate={() => {}}
         open={false}
         onClose={() => {}}
       />
     );
+    expect(screen.queryByRole("link", { name: /^square$/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Go Live" })).toBeNull();
+    expect(screen.queryByTestId("shine-sheet")).toBeNull();
     const rail = container.querySelector("nav");
     if (rail === null) throw new Error("the rail rendered no nav element");
     const rows = [...rail.children].map((el) => el.textContent);
-    expect(rows).toEqual(["Prediction", "Square", "Arkade", "Arktivity"]);
-  });
-
-  // With no Arkade entry to sit above, the square must still appear rather
-  // than fall out of the rail entirely.
-  it("keeps the square in the rail when there is no Arkade entry", async () => {
-    vi.resetModules();
-    vi.doMock("@/lib/market-square", () => ({
-      MARKET_SQUARE_HIDDEN: false,
-      marketSquareHref: () => "https://square.test",
-    }));
-    const { Sidebar: Shown } = await import("./sidebar");
-    render(
-      <Shown
-        items={[{ id: "portfolio", label: "Portfolio", icon: () => null }]}
-        activeSection="portfolio"
-        onNavigate={() => {}}
-        open={false}
-        onClose={() => {}}
-      />
-    );
-    expect(screen.getByRole("link", { name: /^square$/i })).toBeInTheDocument();
+    expect(rows).toEqual(["Prediction", "Arkade", "Arktivity"]);
   });
 
   /**

@@ -48,7 +48,9 @@ const account = (over: Partial<KashAccount> = {}): KashAccount =>
 
 function renderCard() {
   render(
-    <KashCardMobile onBuy={() => {}} onSend={() => {}} onConvert={() => {}} onHistory={() => {}} />,
+    // Kash Buy hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+    // The card also took onBuy={() => {}}.
+    <KashCardMobile onSend={() => {}} onConvert={() => {}} onHistory={() => {}} />,
     {
       wrapper,
     }
@@ -88,16 +90,30 @@ describe("KashCardMobile actions", () => {
     kashHooks.useKashStatus.mockReturnValue({ data: undefined });
   });
 
-  it("puts Send between Buy and Convert, in a row sized for three", () => {
+  // Kash Buy hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // it("puts Send between Buy and Convert, in a row sized for three", () => {
+  //   renderCard();
+  //   const labels = screen
+  //     .getAllByRole("button")
+  //     .map((b) => b.textContent?.trim())
+  //     .filter((label) => label === "Buy" || label === "Send" || label === "Convert");
+  //   expect(labels).toEqual(["Buy", "Send", "Convert"]);
+  //   expect(screen.getByRole("button", { name: "Buy" }).parentElement?.className).toContain(
+  //     "grid-cols-3"
+  //   );
+  // });
+
+  it("shows Send then Convert and no Buy pill, in a row sized for two", () => {
     renderCard();
     const labels = screen
       .getAllByRole("button")
       .map((b) => b.textContent?.trim())
       .filter((label) => label === "Buy" || label === "Send" || label === "Convert");
-    expect(labels).toEqual(["Buy", "Send", "Convert"]);
-    expect(screen.getByRole("button", { name: "Buy" }).parentElement?.className).toContain(
-      "grid-cols-3"
-    );
+    expect(labels).toEqual(["Send", "Convert"]);
+    expect(screen.queryByRole("button", { name: "Buy" })).toBeNull();
+    const row = screen.getByRole("button", { name: "Send" }).parentElement;
+    expect(row?.className).toContain("grid-cols-2");
+    expect(row?.className).not.toContain("grid-cols-3");
   });
 
   // Three pills across a card the carousel can hand a narrow slide, with
@@ -105,7 +121,9 @@ describe("KashCardMobile actions", () => {
   // pills take their type from the card's own width instead, and may shrink.
   it("sizes the pills to the card, so three fit at every width", () => {
     renderCard();
-    for (const name of ["Buy", "Send", "Convert"]) {
+    // Kash Buy hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+    // The loop also covered "Buy".
+    for (const name of ["Send", "Convert"]) {
       const pill = screen.getByRole("button", { name });
       expect(pill.className).toContain("min-w-0");
       expect(pill.className).toMatch(/text-\[clamp\([^\]]*cqw[^\]]*\)\]/);
@@ -118,19 +136,27 @@ describe("KashCardMobile actions", () => {
       sendFlag.enabled = false;
     });
 
-    it("offers Buy and Convert, and no way to send", () => {
+    // Kash Buy hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+    // The test was "offers Buy and Convert, and no way to send", and also
+    // asserted the Buy pill was there:
+    // expect(screen.getByRole("button", { name: "Buy" })).toBeInTheDocument();
+    it("offers Convert, and no way to buy or send", () => {
       renderCard();
-      expect(screen.getByRole("button", { name: "Buy" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Buy" })).toBeNull();
       expect(screen.getByRole("button", { name: "Convert" })).toBeInTheDocument();
       expect(screen.queryByRole("button", { name: "Send" })).toBeNull();
     });
 
     // Two buttons in a three-column grid would leave a hole where Send was.
+    // Kash Buy hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+    // With Buy the row was read off the Buy pill and expected grid-cols-2:
+    // const row = screen.getByRole("button", { name: "Buy" }).parentElement;
+    // expect(row?.className).toContain("grid-cols-2");
     it("sizes the row to the buttons it actually has", () => {
       renderCard();
-      const row = screen.getByRole("button", { name: "Buy" }).parentElement;
-      expect(row?.className).toContain("grid-cols-2");
-      expect(row?.className).not.toContain("grid-cols-3");
+      const row = screen.getByRole("button", { name: "Convert" }).parentElement;
+      expect(row?.className).toContain("grid-cols-1");
+      expect(row?.className).not.toContain("grid-cols-2");
     });
   });
 });

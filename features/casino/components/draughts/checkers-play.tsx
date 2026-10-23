@@ -14,7 +14,8 @@ import { MatchChat } from "@/features/casino/components/draughts/match-chat";
 import { MatchComments } from "@/features/casino/components/draughts/match-comments";
 import { SpectatorBetting } from "@/features/casino/components/draughts/spectator-betting";
 import { ChessCashierLauncher } from "@/features/casino/components/chess-app/chess-cashier-launcher";
-import { GameGoLive } from "@/features/casino/components/broadcast";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// import { GameGoLive } from "@/features/casino/components/broadcast";
 import { armAudioUnlock, playGameEndSound, playMoveSound } from "@/features/casino/lib/chess/sound";
 import {
   remainingSeconds,
@@ -887,9 +888,10 @@ export function CheckersPlay({ matchId }: { matchId: string }) {
           {match.wager || match.computer?.wager ? (
             <ChessCashierLauncher compact productName="Checkers" />
           ) : null}
-          {/* Participants only, and never against the computer: there is no
+          {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+              Participants only, and never against the computer: there is no
               second player and nothing worth spectating. Both players may
-              broadcast at once, each owning their own Market Square stream. */}
+              broadcast at once, each owning their own Market Square stream.
           {seat && !match.computer ? (
             <GameGoLive
               target={{
@@ -908,7 +910,7 @@ export function CheckersPlay({ matchId }: { matchId: string }) {
               }}
               activityOver={settled}
             />
-          ) : null}
+          ) : null} */}
         </div>
       }
       board={

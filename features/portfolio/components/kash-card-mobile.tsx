@@ -43,7 +43,8 @@ function ApproxEqualsGlyph({ className }: { className?: string }) {
 }
 
 interface KashCardMobileProps {
-  onBuy: () => void;
+  // Kash Buy hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // onBuy: () => void;
   /** Opens the Send Kash modal: a wallet address and an amount. */
   onSend: () => void;
   onConvert: () => void;
@@ -54,7 +55,11 @@ interface KashCardMobileProps {
 // 1:1565). The dark KashCard still serves `sm` and up; this stands in on a
 // phone. Same rewards data, same actions: the coin balance up top, the unit
 // price under it, and Buy / Convert along the bottom.
-export function KashCardMobile({ onBuy, onSend, onConvert, onHistory }: KashCardMobileProps) {
+//
+// Kash Buy hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// While it is hidden the bottom row is Send and Convert, or Convert alone.
+// The signature was: { onBuy, onSend, onConvert, onHistory }
+export function KashCardMobile({ onSend, onConvert, onHistory }: KashCardMobileProps) {
   const t = useTranslations("kash");
   const tAuth = useTranslations("auth");
   const { data: account, isError, signedOut, walletMissing } = useKashAccount();
@@ -149,7 +154,12 @@ export function KashCardMobile({ onBuy, onSend, onConvert, onHistory }: KashCard
             and the labels are one short word each. The type is a share of the
             card's width with a floor, and a pill may shrink below its label:
             at 15px fixed, "Convert" ran past the card on a narrow slide. */}
-        <div className={`grid gap-[1.9cqw] ${KASH_SEND_ENABLED ? "grid-cols-3" : "grid-cols-2"}`}>
+        {/* Kash Buy hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+            One column fewer while Buy is hidden, so the row has no hole
+            where it stood. With Buy the grid was:
+            KASH_SEND_ENABLED ? "grid-cols-3" : "grid-cols-2" */}
+        <div className={`grid gap-[1.9cqw] ${KASH_SEND_ENABLED ? "grid-cols-2" : "grid-cols-1"}`}>
+          {/* Kash Buy hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
           <button
             onClick={onBuy}
             className="flex min-w-0 cursor-pointer items-center justify-center gap-[1.4cqw] rounded-full bg-white px-[1.5cqw] py-[14px] text-[clamp(11px,4.1cqw,15px)] font-semibold text-black shadow-[0_1.6px_3.3px_rgba(90,60,0,0.18)] transition-transform active:scale-[0.98]"
@@ -157,7 +167,9 @@ export function KashCardMobile({ onBuy, onSend, onConvert, onHistory }: KashCard
             <ArrowDownGlyph className="h-[3.7cqw] w-[3.7cqw]" />
             {t("buy")}
           </button>
-          {/* Ink on the card's own gold, so Buy stays the one bright pill. */}
+          */}
+          {/* Ink on the card's own gold, so Buy stays the one bright pill
+              when it returns. */}
           {KASH_SEND_ENABLED ? (
             <button
               onClick={onSend}

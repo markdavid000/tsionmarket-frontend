@@ -6,7 +6,8 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { markKnownUser } from "@/lib/known-user";
 import { Topbar } from "@/components/layout/topbar";
 import { AccountModal } from "@/components/layout/modals/account-modal";
-import { ShineSheet } from "@/components/shine/shine-sheet";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// import { ShineSheet } from "@/components/shine/shine-sheet";
 import { CurvedTabBar } from "@/components/layout/curved-tab-bar";
 import { ConnectionBanner } from "@/components/layout/connection-banner";
 import { SupportButton } from "@/components/layout/support-button";
@@ -46,9 +47,10 @@ interface DashboardShellProps {
 // there and otherwise navigates to /dashboard#id first.
 export function DashboardShell({ nav, activeSection, children }: DashboardShellProps) {
   const [accountOpen, setAccountOpen] = useState(false);
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
   // Held by the shell, not the account modal: that modal closes on the way to
   // this one, and a sheet rendered inside it would close with it.
-  const [shineOpen, setShineOpen] = useState(false);
+  // const [shineOpen, setShineOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const addFunds = useAddFunds();
   const requireSession = useRequireSession();
@@ -118,11 +120,14 @@ export function DashboardShell({ nav, activeSection, children }: DashboardShellP
       <ModalShell open={accountOpen} onClose={() => setAccountOpen(false)}>
         <AccountModal
           onClose={() => setAccountOpen(false)}
-          onOpenShine={() => setShineOpen(true)}
+          // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+          // onOpenShine={() => setShineOpen(true)}
         />
       </ModalShell>
 
+      {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
       <ShineSheet open={shineOpen} onClose={() => setShineOpen(false)} />
+      */}
 
       <ModalShell open={withdrawOpen} onClose={() => setWithdrawOpen(false)} size="lg">
         <WithdrawModal onClose={() => setWithdrawOpen(false)} />

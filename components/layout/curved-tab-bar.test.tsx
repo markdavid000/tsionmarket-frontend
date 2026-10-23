@@ -36,6 +36,11 @@ vi.mock("motion/react", () => {
       button: ({ animate, style, ...props }: MotionProps) => (
         <button {...strip(props)} style={{ ...style, ...animate }} />
       ),
+      img: ({ animate, style, ...props }: MotionProps) => (
+        // A stand-in for motion.img, so a plain img is the point here.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img alt="" {...strip(props)} style={{ ...style, ...animate }} />
+      ),
     },
     AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     useReducedMotion: () => true,
@@ -49,8 +54,9 @@ vi.mock("@/lib/market-square", () => ({
 const { CurvedTabBar } = await import("./curved-tab-bar");
 
 // Stands in for buildNav's output: the dock reads the active section's localized
-// name off these. The bar's own icon labels (Home, Market, Square, Arkade,
-// Activity) are its own, and are what the tests click by.
+// name off these. The bar's own icon labels (Home, Market, Arkade, Activity)
+// are its own, and are what the tests click by. Square is hidden; see
+// docs/adr/ADR-2026-10-23-hide-market-square.md.
 const NAV: NavItem[] = [
   { id: "portfolio", label: "Portfolio", icon: () => null },
   { id: "spot", label: "Spot", icon: () => null },
@@ -71,9 +77,47 @@ beforeEach(() => {
 });
 
 describe("CurvedTabBar", () => {
-  it("draws five seats over the dome", () => {
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // The Square seat is gone, so the dome carries four.
+  it("draws four seats over the dome", () => {
     renderBar();
-    expect(screen.getAllByRole("button")).toHaveLength(5);
+    expect(screen.getAllByRole("button")).toHaveLength(4);
+  });
+
+  it("offers no Square seat", () => {
+    renderBar();
+    expect(screen.queryByRole("button", { name: "Square" })).toBeNull();
+  });
+
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // With four tabs each keeps its own seat, evenly spaced across the dome, and
+  // the order does not change with the page.
+  it("spaces the four tabs evenly and keeps their order whatever is active", () => {
+    for (const section of ["portfolio", "spot", "casino", "activity"] as const) {
+      const { container, unmount } = render(
+        <CurvedTabBar items={NAV} activeSection={section} onNavigate={vi.fn()} />
+      );
+      const seats = within(container)
+        .getAllByRole("button")
+        .map((b) => [b.getAttribute("aria-label"), b.style.left]);
+      expect(seats).toEqual([
+        ["Home", "17.5%"],
+        ["Market", "39.17%"],
+        ["Arkade", "60.83%"],
+        ["Activity", "82.5%"],
+      ]);
+      unmount();
+    }
+    renderBar(vi.fn(), "spot");
+    expect(screen.getByRole("button", { name: "Market" })).toHaveAttribute("aria-current", "page");
+  });
+
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // A route that still reports the square section owns no seat now, so the
+  // bar rests with nothing raised rather than raising the wrong tab.
+  it("raises no seat on a page that reports the square section", () => {
+    const { container } = renderBar(vi.fn(), "square");
+    expect(container.querySelector('[aria-current="page"]')).toBeNull();
   });
 
   it("sends the Market seat to the phone Market page", () => {
@@ -83,31 +127,33 @@ describe("CurvedTabBar", () => {
     expect(onNavigate).not.toHaveBeenCalled();
   });
 
-  it("sends the Square seat to /square in this tab, as a full page load", () => {
-    // /square is the Square's own app (lib/square-zone): a client push would
-    // ask this build for a route it no longer has, and a new tab loses Ark.
-    const open = vi.spyOn(window, "open").mockImplementation(() => null);
-    const assign = vi.fn();
-    const original = window.location;
-    Object.defineProperty(window, "location", {
-      configurable: true,
-      value: { ...original, assign },
-    });
-    const { onNavigate } = renderBar();
-    fireEvent.click(screen.getByRole("button", { name: "Square" }));
-    expect(assign).toHaveBeenCalledWith("/square");
-    expect(router.push).not.toHaveBeenCalledWith("/square");
-    expect(open).not.toHaveBeenCalled();
-    expect(onNavigate).not.toHaveBeenCalled();
-    Object.defineProperty(window, "location", { configurable: true, value: original });
-    open.mockRestore();
-  });
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // it("sends the Square seat to /square in this tab, as a full page load", () => {
+  //   // /square is the Square's own app (lib/square-zone): a client push would
+  //   // ask this build for a route it no longer has, and a new tab loses Ark.
+  //   const open = vi.spyOn(window, "open").mockImplementation(() => null);
+  //   const assign = vi.fn();
+  //   const original = window.location;
+  //   Object.defineProperty(window, "location", {
+  //     configurable: true,
+  //     value: { ...original, assign },
+  //   });
+  //   const { onNavigate } = renderBar();
+  //   fireEvent.click(screen.getByRole("button", { name: "Square" }));
+  //   expect(assign).toHaveBeenCalledWith("/square");
+  //   expect(router.push).not.toHaveBeenCalledWith("/square");
+  //   expect(open).not.toHaveBeenCalled();
+  //   expect(onNavigate).not.toHaveBeenCalled();
+  //   Object.defineProperty(window, "location", { configurable: true, value: original });
+  //   open.mockRestore();
+  // });
 
-  it("raises the Square seat to the centre while on /square", () => {
-    renderBar(vi.fn(), "square");
-    // The seat is marked current, as the active seat is on every other route.
-    expect(screen.getByRole("button", { name: "Square" })).toHaveAttribute("aria-current", "page");
-  });
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // it("raises the Square seat to the centre while on /square", () => {
+  //   renderBar(vi.fn(), "square");
+  //   // The seat is marked current, as the active seat is on every other route.
+  //   expect(screen.getByRole("button", { name: "Square" })).toHaveAttribute("aria-current", "page");
+  // });
 
   it("sends the Activity seat to Activity, since the phone has no drawer", () => {
     renderBar();
@@ -115,22 +161,39 @@ describe("CurvedTabBar", () => {
     expect(router.push).toHaveBeenCalledWith("/activity");
   });
 
-  it("raises the active section's icon into the centre seat", () => {
-    // The centre seat is SEATS[2] = { x: 50, y: 30 }, and the stub folds the
-    // animated position into the element's style. Whichever section owns the
-    // page rides up there and reads as the current page.
-    const home = within(renderBar(vi.fn(), "portfolio").container).getByRole("button", {
-      name: "Home",
-    });
-    expect(home).toHaveAttribute("aria-current", "page");
-    expect(home.style.left).toBe("50%");
-    expect(home.style.top).toBe("30%");
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // With five tabs the active icon rode up into the centre seat.
+  // it("raises the active section's icon into the centre seat", () => {
+  //   // The centre seat is SEATS[2] = { x: 50, y: 30 }, and the stub folds the
+  //   // animated position into the element's style. Whichever section owns the
+  //   // page rides up there and reads as the current page.
+  //   const home = within(renderBar(vi.fn(), "portfolio").container).getByRole("button", {
+  //     name: "Home",
+  //   });
+  //   expect(home).toHaveAttribute("aria-current", "page");
+  //   expect(home.style.left).toBe("50%");
+  //   expect(home.style.top).toBe("30%");
+  //
+  //   const activity = within(renderBar(vi.fn(), "activity").container).getByRole("button", {
+  //     name: "Activity",
+  //   });
+  //   expect(activity).toHaveAttribute("aria-current", "page");
+  //   expect(activity.style.left).toBe("50%");
+  // });
 
-    const activity = within(renderBar(vi.fn(), "activity").container).getByRole("button", {
-      name: "Activity",
-    });
+  it("keeps the active icon in its seat and moves the glow and name under it", () => {
+    // The stub folds each animated position into the element's style, so the
+    // glow and the name can be read where they landed.
+    const { container } = renderBar(vi.fn(), "activity");
+    const activity = within(container).getByRole("button", { name: "Activity" });
     expect(activity).toHaveAttribute("aria-current", "page");
-    expect(activity.style.left).toBe("50%");
+    expect(activity.style.left).toBe("82.5%");
+    expect(activity.style.top).toBe("52%");
+
+    const glow = container.querySelector<HTMLElement>('img[src="/nav/glow.svg"]');
+    expect(glow?.style.left).toBe("82.5%");
+    const name = screen.getByText("Activity", { selector: "span" }).parentElement;
+    expect(name?.style.left).toBe("82.5%");
   });
 
   it("names the active section under the dock", () => {

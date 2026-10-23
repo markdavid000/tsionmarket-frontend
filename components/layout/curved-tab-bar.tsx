@@ -6,7 +6,8 @@ import { guardNavigation } from "@/lib/navigation-guard";
 import { ClockIcon } from "@/components/ui/icons";
 import type { SectionId } from "@/lib/sections";
 import type { NavItem } from "@/components/layout/nav-items";
-import { openSquareZone } from "@/lib/square-zone";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// import { openSquareZone } from "@/lib/square-zone";
 
 // The five icons, lifted straight from the Figma art (node 104:2688) so the
 // glyphs match the dome exactly. Each keeps the art's own coordinates as its
@@ -45,39 +46,40 @@ function MarketIcon({ size = 24 }: IconProps) {
   );
 }
 
-// Market Square is drawn as a little sheened ID card in the comp, so it carries
-// its own fills rather than currentColor.
-function SquareIcon({ size = 26 }: IconProps) {
-  return (
-    <svg width={size} height={(size * 20) / 26} viewBox="188 19.5 26 20" fill="none">
-      <path
-        d="M203.229 20L189 21.7423V38.5845H203.52H213.973V21.7423L203.229 20Z"
-        fill="url(#dome_card_sheen)"
-      />
-      <path
-        d="M190.453 35.3902V23.7749L202.939 22.3229V37.7133L199.745 35.0998L190.453 35.3902Z"
-        fill="#1F1F1F"
-      />
-      <path
-        d="M198.525 28.1909C198.045 28.2244 197.669 28.6416 197.686 29.1222C197.703 29.603 198.105 29.9665 198.585 29.933C199.065 29.8993 199.441 29.4814 199.424 29.0007C199.407 28.5201 199.004 28.1574 198.525 28.1909ZM196.207 28.3539C195.727 28.3875 195.352 28.8045 195.368 29.2852C195.385 29.7658 195.788 30.1285 196.268 30.095C196.748 30.0615 197.123 29.6444 197.106 29.1637C197.09 28.6829 196.687 28.3203 196.207 28.3539ZM193.889 28.515C193.41 28.5487 193.034 28.9658 193.051 29.4463C193.068 29.927 193.47 30.2895 193.95 30.2561C194.43 30.2225 194.806 29.8056 194.789 29.3248C194.772 28.8442 194.369 28.4814 193.889 28.515Z"
-        fill="white"
-      />
-      <defs>
-        <linearGradient
-          id="dome_card_sheen"
-          x1="202.068"
-          y1="33.9384"
-          x2="216.006"
-          y2="33.9384"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop stopColor="#978EA5" />
-          <stop offset="0.171352" stopColor="white" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// // Market Square is drawn as a little sheened ID card in the comp, so it carries
+// // its own fills rather than currentColor.
+// function SquareIcon({ size = 26 }: IconProps) {
+//   return (
+//     <svg width={size} height={(size * 20) / 26} viewBox="188 19.5 26 20" fill="none">
+//       <path
+//         d="M203.229 20L189 21.7423V38.5845H203.52H213.973V21.7423L203.229 20Z"
+//         fill="url(#dome_card_sheen)"
+//       />
+//       <path
+//         d="M190.453 35.3902V23.7749L202.939 22.3229V37.7133L199.745 35.0998L190.453 35.3902Z"
+//         fill="#1F1F1F"
+//       />
+//       <path
+//         d="M198.525 28.1909C198.045 28.2244 197.669 28.6416 197.686 29.1222C197.703 29.603 198.105 29.9665 198.585 29.933C199.065 29.8993 199.441 29.4814 199.424 29.0007C199.407 28.5201 199.004 28.1574 198.525 28.1909ZM196.207 28.3539C195.727 28.3875 195.352 28.8045 195.368 29.2852C195.385 29.7658 195.788 30.1285 196.268 30.095C196.748 30.0615 197.123 29.6444 197.106 29.1637C197.09 28.6829 196.687 28.3203 196.207 28.3539ZM193.889 28.515C193.41 28.5487 193.034 28.9658 193.051 29.4463C193.068 29.927 193.47 30.2895 193.95 30.2561C194.43 30.2225 194.806 29.8056 194.789 29.3248C194.772 28.8442 194.369 28.4814 193.889 28.515Z"
+//         fill="white"
+//       />
+//       <defs>
+//         <linearGradient
+//           id="dome_card_sheen"
+//           x1="202.068"
+//           y1="33.9384"
+//           x2="216.006"
+//           y2="33.9384"
+//           gradientUnits="userSpaceOnUse"
+//         >
+//           <stop stopColor="#978EA5" />
+//           <stop offset="0.171352" stopColor="white" />
+//         </linearGradient>
+//       </defs>
+//     </svg>
+//   );
+// }
 
 function CasinoIcon({ size = 24 }: IconProps) {
   return (
@@ -140,29 +142,55 @@ interface Tab {
   ownColour?: boolean;
 }
 
-// The bar's five destinations, in their resting left-to-right order.
+// The bar's destinations, in screen order. There are four while the square is
+// hidden, each with a seat of its own (SEATS below).
 const TABS: Tab[] = [
   { key: "portfolio", label: "Home", section: "portfolio", Icon: PortfolioIcon },
   { key: "market", label: "Market", section: "spot", Icon: MarketIcon },
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
   // Its own page in the app (/square, ADR-2026-09-12), so it takes the
-  // "square" section and rides to the centre while the reader is there —
+  // "square" section and rides to the centre while the reader is there,
   // the same seat logic as every other tab, no longer an outbound link.
-  { key: "square", label: "Square", section: "square", Icon: SquareIcon, ownColour: true },
+  // { key: "square", label: "Square", section: "square", Icon: SquareIcon, ownColour: true },
   { key: "casino", label: "Arkade", section: "casino", Icon: CasinoIcon },
   { key: "activity", label: "Activity", section: "activity", Icon: ClockIcon },
 ];
 
-// The five seats along the dome, in screen order, as a share of the 402x90 art.
-// The icons ride the arch, so the inner seats sit higher than the outer ones and
-// the centre sits highest of all. Whichever tab is active takes seat 2.
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// The five-seat layout, where the active tab rode up into the centre seat under
+// a fixed glow and name. Restore it, and the reshuffle in CurvedTabBar, with
+// the Square tab.
+// // The five seats along the dome, in screen order, as a share of the 402x90 art.
+// // The icons ride the arch, so the inner seats sit higher than the outer ones and
+// // the centre sits highest of all. Whichever tab is active takes seat 2.
+// const SEATS = [
+//   { x: 15.0, y: 74 },
+//   { x: 32.3, y: 46 },
+//   { x: 50.0, y: 30 },
+//   { x: 71.4, y: 46 },
+//   { x: 86.8, y: 78 },
+// ] as const;
+// const CENTRE = 2;
+
+// The four seats, one per tab, evenly spaced across the dome, as a share of the
+// 402x90 art. The dome is the top of a 291px circle centred under the bar, so
+// it falls away steeply at the sides: the outer seats sit lower than the inner
+// ones to stay inside it. `tilt` turns the glow under the active icon toward
+// the dome's slope at the seat, in degrees. It is half the true slope (8.6 and
+// 26.7 degrees): the icons stay upright, and a glow at the full slope read as a
+// slash across the bar rather than an arc under the icon.
 const SEATS = [
-  { x: 15.0, y: 74 },
-  { x: 32.3, y: 46 },
-  { x: 50.0, y: 30 },
-  { x: 71.4, y: 46 },
-  { x: 86.8, y: 78 },
+  { x: 17.5, y: 52, tilt: -13 },
+  { x: 39.17, y: 31, tilt: -4 },
+  { x: 60.83, y: 31, tilt: 4 },
+  { x: 82.5, y: 52, tilt: 13 },
 ] as const;
-const CENTRE = 2;
+
+// How far below the active icon its glow and its name sit, as a share of the
+// bar's height. Tighter than the old centre stack, which only fitted under the
+// top of the dome: the outer seats have about half that room.
+const GLOW_DROP = 18;
+const LABEL_DROP = 36;
 
 interface CurvedTabBarProps {
   // Kept so this stays a drop-in for the old bar; the labels are the bar's own.
@@ -174,11 +202,15 @@ interface CurvedTabBarProps {
 /**
  * The phone tab bar, drawn as the raised dome from the comp (Figma 104:2688).
  *
- * The purple arc and the title do NOT move: they are a fixed frame in the
- * centre. Whatever tab is active rides up into that centre seat, and the other
- * four keep their left-to-right order and close the gap it leaves. So switching
- * tabs reshuffles the icons THROUGH the centre rather than sliding an indicator
- * to them. Mobile only.
+ * Each tab keeps its own seat. The active one is drawn bright and larger, and
+ * the purple arc and the section's name slide along the dome to sit under it.
+ * Mobile only.
+ *
+ * Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+ * With five tabs the arc and the name were a fixed frame in the centre, and
+ * the active tab rode up into the centre seat while the other four closed the
+ * gap it left. Four tabs cannot be spaced evenly around a centre seat, so the
+ * highlight moves instead.
  */
 export function CurvedTabBar({ items, activeSection, onNavigate }: CurvedTabBarProps) {
   const router = useRouter();
@@ -194,13 +226,15 @@ export function CurvedTabBar({ items, activeSection, onNavigate }: CurvedTabBarP
       if (guardNavigation("/market")) return;
       router.push("/market");
     }
+    // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
     // The Square seat opens /square in this tab, exactly as the desktop rail's
     // entry does. /square is the Square's own app now (lib/square-zone), so it
     // is a full page load rather than a client transition.
-    else if (tab.key === "square") {
-      if (guardNavigation("/square")) return;
-      openSquareZone();
-    } else if (tab.key === "casino") onNavigate("casino");
+    // else if (tab.key === "square") {
+    //   if (guardNavigation("/square")) return;
+    //   openSquareZone();
+    // }
+    else if (tab.key === "casino") onNavigate("casino");
     else {
       if (guardNavigation("/activity")) return;
       router.push("/activity");
@@ -208,13 +242,16 @@ export function CurvedTabBar({ items, activeSection, onNavigate }: CurvedTabBarP
   };
 
   const activeTab = TABS.find((t) => t.section !== undefined && t.section === activeSection);
-  // Reshuffle: pull the active tab out, keep the rest in order, and drop the
-  // active one back into the centre seat. With nothing active the bar rests in
-  // its natural order. The label under the dock is the nav's localized name.
-  const others = TABS.filter((t) => t.key !== activeTab?.key);
-  const ordered = activeTab
-    ? [...others.slice(0, CENTRE), activeTab, ...others.slice(CENTRE)]
-    : TABS;
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // // Reshuffle: pull the active tab out, keep the rest in order, and drop the
+  // // active one back into the centre seat. With nothing active the bar rests in
+  // // its natural order. The label under the dock is the nav's localized name.
+  // const others = TABS.filter((t) => t.key !== activeTab?.key);
+  // const ordered = activeTab
+  //   ? [...others.slice(0, CENTRE), activeTab, ...others.slice(CENTRE)]
+  //   : TABS;
+  // The active tab's seat, which the arc and the name sit under.
+  const activeSeat = activeTab ? SEATS[TABS.indexOf(activeTab)] : null;
   // The market seat borrows the "spot" section only to know which icon to
   // raise; its name is its own ("Market"), not the spot section's. Every other
   // seat takes the nav's localized section name.
@@ -235,53 +272,77 @@ export function CurvedTabBar({ items, activeSection, onNavigate }: CurvedTabBarP
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/nav/dome-bg.svg" alt="" className="absolute inset-0 h-full w-full select-none" />
 
-        {/* The fixed centre frame: the purple arc and the active section's name.
-            Neither moves; only the name changes as the icons reshuffle under it. */}
-        {activeTab ? (
+        {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+            The five-tab bar drew this pair as a fixed frame at the centre:
+            the glow at top-[63%] left-1/2 and the name at top-[83%] left-1/2,
+            neither moving while the icons reshuffled under it.
+
+            The active seat's glow and name. Both slide along the dome to sit
+            under the active icon, and the glow leans with the dome at the outer
+            seats. It is narrower than the five-tab glow (21.5% of the bar) so
+            it stays under one icon now that the seats are wider apart. */}
+        {activeSeat ? (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <motion.img
               src="/nav/glow.svg"
               alt=""
-              className="pointer-events-none absolute top-[63%] left-1/2 w-[21.5%] -translate-x-1/2 -translate-y-1/2 drop-shadow-[0_0_6px_rgba(216,188,255,0.45)] select-none"
+              initial={false}
+              animate={{
+                left: `${activeSeat.x}%`,
+                top: `${activeSeat.y + GLOW_DROP}%`,
+                rotate: activeSeat.tilt,
+              }}
+              transition={spring}
+              className="pointer-events-none absolute w-[13%] -translate-x-1/2 -translate-y-1/2 drop-shadow-[0_0_6px_rgba(216,188,255,0.45)] select-none"
             />
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={activeLabel}
-                initial={reduce ? false : { opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={reduce ? undefined : { opacity: 0 }}
-                transition={{ duration: 0.16 }}
-                className="pointer-events-none absolute top-[83%] left-1/2 -translate-x-1/2 -translate-y-1/2 font-serif text-[12px] font-semibold tracking-[-0.36px] whitespace-nowrap text-white"
-              >
-                {activeLabel}
-              </motion.span>
-            </AnimatePresence>
+            <motion.div
+              initial={false}
+              animate={{ left: `${activeSeat.x}%`, top: `${activeSeat.y + LABEL_DROP}%` }}
+              transition={spring}
+              className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2"
+            >
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={activeLabel}
+                  initial={reduce ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={reduce ? undefined : { opacity: 0 }}
+                  transition={{ duration: 0.16 }}
+                  className="block font-serif text-[12px] font-semibold tracking-[-0.36px] whitespace-nowrap text-white"
+                >
+                  {activeLabel}
+                </motion.span>
+              </AnimatePresence>
+            </motion.div>
           </>
         ) : null}
 
-        {/* The icons. Each animates to the seat its slot in `ordered` gives it,
-            so the active one rides up to the centre and the others close the
-            gap. Keyed by tab, so motion moves the same element. */}
+        {/* The icons, one per seat in TABS order. The active one is drawn
+            bright and a size up, and is the current page.
+
+            Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+            With five tabs each icon animated to the seat its slot in `ordered`
+            gave it, so the active one rode up to the centre (seat CENTRE) and
+            the others closed the gap. */}
         <nav aria-label="Primary" className="absolute inset-0">
-          {ordered.map((tab, i) => {
+          {TABS.map((tab, i) => {
             const seat = SEATS[i];
-            const centred = i === CENTRE;
+            const active = tab === activeTab;
             return (
               <motion.button
                 key={tab.key}
                 type="button"
                 onClick={() => onTap(tab)}
                 aria-label={tab.label}
-                aria-current={centred && activeTab ? "page" : undefined}
+                aria-current={active ? "page" : undefined}
                 initial={false}
                 animate={{ left: `${seat.x}%`, top: `${seat.y}%` }}
                 transition={spring}
                 className={`pointer-events-auto absolute flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center ${
-                  tab.ownColour ? "" : centred && activeTab ? "text-white" : "text-white/50"
+                  tab.ownColour ? "" : active ? "text-white" : "text-white/50"
                 }`}
               >
-                <tab.Icon size={centred ? 26 : 23} />
+                <tab.Icon size={active ? 26 : 23} />
               </motion.button>
             );
           })}

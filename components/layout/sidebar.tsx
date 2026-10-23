@@ -13,11 +13,13 @@ import { useAuthSession } from "@/hooks/use-auth-session";
 import { useSignedIn } from "@/hooks/use-signed-in";
 import { SignInButton } from "@/components/auth/sign-in-button";
 import { useDisplayName } from "@/hooks/use-display-name";
-import { GoLiveControl } from "@/components/broadcast/go-live-control";
-import { MARKET_SQUARE_HIDDEN } from "@/lib/market-square";
-import { SQUARE_ZONE_PATH, openSquareZone } from "@/lib/square-zone";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// import { GoLiveControl } from "@/components/broadcast/go-live-control";
+// import { MARKET_SQUARE_HIDDEN } from "@/lib/market-square";
+// import { SQUARE_ZONE_PATH, openSquareZone } from "@/lib/square-zone";
 import { AccountPopover } from "@/components/layout/account-popover";
-import { ShineSheet } from "@/components/shine/shine-sheet";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// import { ShineSheet } from "@/components/shine/shine-sheet";
 
 interface SidebarProps {
   items: NavItem[];
@@ -40,22 +42,24 @@ export function Sidebar({ items, activeSection, onNavigate, open, onClose }: Sid
   const squareAvatar = useSquareAvatar();
   const squareSeed = useSquareSeed();
   const t = useTranslations("topbar");
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
   // The square is a product with its own catalog namespace, so the rail reads
   // its name from there rather than repeating the string. The rail's word is
   // "Square" (asked for 2026-09-12); the page keeps the fuller title.
-  const tSquare = useTranslations("square");
+  // const tSquare = useTranslations("square");
   // This reads MARKET_SQUARE_HIDDEN, the way-in switch, and nothing else. A
   // hidden square (no URL, or an operator takedown) has no page to open, so
   // the entry goes with it. What the portfolio renders of the square is
   // SQUARE_SECTIONS_HIDDEN's question, and the rail must not read it: the
   // entry stands while those sections are off.
-  const squareShown = !MARKET_SQUARE_HIDDEN;
+  // const squareShown = !MARKET_SQUARE_HIDDEN;
 
   const [accountPopoverOpen, setAccountPopoverOpen] = useState(false);
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
   // Held here rather than inside the popover: the popover closes on an outside
   // click, and the sheet would go with it the moment somebody reached for a
   // switch inside it.
-  const [shineOpen, setShineOpen] = useState(false);
+  // const [shineOpen, setShineOpen] = useState(false);
   const profileButtonRef = useRef<HTMLButtonElement>(null);
 
   // While the drawer is open the page behind it does not scroll, and Escape
@@ -99,7 +103,8 @@ export function Sidebar({ items, activeSection, onNavigate, open, onClose }: Sid
   };
 
   // The design seats the square between Prediction and Arkade. With no Arkade
-  // entry it falls to the end of the rail.
+  // entry it falls to the end of the rail. While the square is hidden the two
+  // slices below simply render back to back, so the rail keeps its order.
   const arkadeIndex = items.findIndex((n) => n.id === "casino");
   const squareIndex = arkadeIndex === -1 ? items.length : arkadeIndex;
 
@@ -144,12 +149,16 @@ export function Sidebar({ items, activeSection, onNavigate, open, onClose }: Sid
           </button>
         </div>
 
-        {/* M3 puts the rail's primary action at the top, above a divider.
-            Never a floating overlay on desktop. */}
+        {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+            Go Live broadcasts to Market Square, so it goes with the square,
+            and the divider under it goes too.
+            M3 puts the rail's primary action at the top, above a divider.
+            Never a floating overlay on desktop.
         <div className="shrink-0 pb-3">
           <GoLiveControl variant="rail" />
         </div>
         <div className="mb-3 h-px shrink-0 bg-white/8" />
+        */}
 
         {/* Short viewports, a phone in landscape or 150% zoom on a laptop, leave
             the rail taller than the screen. The nav list is the part that
@@ -160,7 +169,8 @@ export function Sidebar({ items, activeSection, onNavigate, open, onClose }: Sid
         <nav className="flex min-h-0 flex-col gap-[3px] overflow-x-hidden overflow-y-auto">
           {items.slice(0, squareIndex).map(renderItem)}
 
-          {/* Market Square lives at /square, and the design gives it an
+          {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+              Market Square lives at /square, and the design gives it an
               ordinary rail row between Prediction and Arkade. /square is the
               Square's OWN app (a Next.js Multi-Zone, lib/square-zone), so this
               is a plain anchor — a full page load — not a next/link, which
@@ -170,7 +180,7 @@ export function Sidebar({ items, activeSection, onNavigate, open, onClose }: Sid
               dead entry, and
               MARKET_SQUARE_HIDDEN in lib/market-square.ts is the off switch.
               It is not affected by SQUARE_SECTIONS_HIDDEN, which only governs
-              the square's sections on the portfolio. */}
+              the square's sections on the portfolio.
           {squareShown ? (
             <a
               href={SQUARE_ZONE_PATH}
@@ -190,7 +200,8 @@ export function Sidebar({ items, activeSection, onNavigate, open, onClose }: Sid
               }`}
             >
               <span className="grid h-5 w-5 place-items-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                When restored, put the no-img-element lint exemption back as a
+                JSX comment on the line above the img, as it was.
                 <img
                   src="/nav/market-square.svg"
                   alt=""
@@ -202,6 +213,7 @@ export function Sidebar({ items, activeSection, onNavigate, open, onClose }: Sid
               <span className="flex-1">{tSquare("navLabel")}</span>
             </a>
           ) : null}
+          */}
 
           {items.slice(squareIndex).map(renderItem)}
         </nav>
@@ -241,9 +253,12 @@ export function Sidebar({ items, activeSection, onNavigate, open, onClose }: Sid
           {/* Always mounted: AccountPopover plays its own exit animation off
               the `open` prop, and unmounting it here would skip straight past
               that closing frame. */}
+          {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
           <ShineSheet open={shineOpen} onClose={() => setShineOpen(false)} />
+          */}
           <AccountPopover
-            onOpenShine={() => setShineOpen(true)}
+            // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+            // onOpenShine={() => setShineOpen(true)}
             open={accountPopoverOpen}
             onClose={() => setAccountPopoverOpen(false)}
             triggerRef={profileButtonRef}

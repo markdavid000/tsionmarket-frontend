@@ -79,17 +79,28 @@ function realSlideHeadlines(): string[] {
 }
 
 describe("conversation row", () => {
-  // The band is Square and nothing else now: the room the design drew it
-  // around, the rooms that are live, the way into one of your own, and the
-  // feed. The Arkade's games have their own shelf.
-  it("deals the chess room, then the rooms, going live and the feed", () => {
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // The row carries the chess room alone while the square is hidden. The
+  // original test, kept for when the square comes back:
+  // // The band is Square and nothing else now: the room the design drew it
+  // // around, the rooms that are live, the way into one of your own, and the
+  // // feed. The Arkade's games have their own shelf.
+  // it("deals the chess room, then the rooms, going live and the feed", () => {
+  //   render(<ConversationRow />, { wrapper });
+  //   expect(realSlideHeadlines()).toEqual([
+  //     enMessages.discovery.conversationHeadline,
+  //     enMessages.discovery.squareIdleHeadline,
+  //     enMessages.discovery.goLiveHeadline,
+  //     enMessages.discovery.feedHeadline,
+  //   ]);
+  // });
+
+  it("deals the chess room alone while the square is hidden", () => {
     render(<ConversationRow />, { wrapper });
-    expect(realSlideHeadlines()).toEqual([
-      enMessages.discovery.conversationHeadline,
-      enMessages.discovery.squareIdleHeadline,
-      enMessages.discovery.goLiveHeadline,
-      enMessages.discovery.feedHeadline,
-    ]);
+    expect(realSlideHeadlines()).toEqual([enMessages.discovery.conversationHeadline]);
+    expect(screen.queryByText(enMessages.discovery.squareIdleHeadline)).toBeNull();
+    expect(screen.queryByText(enMessages.discovery.goLiveHeadline)).toBeNull();
+    expect(screen.queryByText(enMessages.discovery.feedHeadline)).toBeNull();
   });
 
   it("carries no Arkade game, which is the other shelf's job", () => {
@@ -99,38 +110,55 @@ describe("conversation row", () => {
     expect(screen.queryByRole("link", { name: /Join Now/ })).toBeNull();
   });
 
-  it("sends the heading to Market Square, in the same tab", () => {
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // it("sends the heading to Market Square, in the same tab", () => {
+  //   render(<ConversationRow />, { wrapper });
+  //   const heading = screen.getByRole("link", { name: enMessages.discovery.conversationTitle });
+  //   expect(heading).toHaveAttribute("href", "https://square.example");
+  //   expect(heading).not.toHaveAttribute("target");
+  // });
+
+  it("sends the heading to the chess lobby, in the same tab", () => {
     render(<ConversationRow />, { wrapper });
     const heading = screen.getByRole("link", { name: enMessages.discovery.conversationTitle });
-    expect(heading).toHaveAttribute("href", "https://square.example");
+    expect(heading).toHaveAttribute("href", "/casino/chess");
     expect(heading).not.toHaveAttribute("target");
   });
 
-  // Two of the square's cards only OPEN the square, so they open its page in
-  // this app. The one that does something, starting a room, still leaves.
-  it("sends the feed and the idle rooms card to the Square page, and Go live out", () => {
-    render(<ConversationRow />, { wrapper });
-    for (const name of [/Open the feed/, /Open Square/]) {
-      const pill = screen.getAllByRole("link", { name })[0];
-      expect(pill).toHaveAttribute("href", "/square");
-      expect(pill).not.toHaveAttribute("target");
-    }
-    const start = screen.getAllByRole("link", { name: /Start a room/ })[0];
-    expect(start).toHaveAttribute("href", "https://square.example");
-    expect(start).toHaveAttribute("target", "_blank");
-  });
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // // Two of the square's cards only OPEN the square, so they open its page in
+  // // this app. The one that does something, starting a room, still leaves.
+  // it("sends the feed and the idle rooms card to the Square page, and Go live out", () => {
+  //   render(<ConversationRow />, { wrapper });
+  //   for (const name of [/Open the feed/, /Open Square/]) {
+  //     const pill = screen.getAllByRole("link", { name })[0];
+  //     expect(pill).toHaveAttribute("href", "/square");
+  //     expect(pill).not.toHaveAttribute("target");
+  //   }
+  //   const start = screen.getAllByRole("link", { name: /Start a room/ })[0];
+  //   expect(start).toHaveAttribute("href", "https://square.example");
+  //   expect(start).toHaveAttribute("target", "_blank");
+  // });
+  //
+  // it("puts the live room on the square card", () => {
+  //   useLiveConversations.mockReturnValue([
+  //     {
+  //       id: "r1",
+  //       title: "Base season, who wins",
+  //       host: "Ada",
+  //       avatars: [],
+  //       href: "https://square.example/live/r1",
+  //     },
+  //   ]);
+  //   render(<ConversationRow />, { wrapper });
+  //   expect(screen.getAllByText("Base season, who wins").length).toBeGreaterThan(0);
+  // });
 
-  it("puts the live room on the square card", () => {
-    useLiveConversations.mockReturnValue([
-      {
-        id: "r1",
-        title: "Base season, who wins",
-        host: "Ada",
-        avatars: [],
-        href: "https://square.example/live/r1",
-      },
-    ]);
+  it("shows no square pill and reads no live square rooms", () => {
     render(<ConversationRow />, { wrapper });
-    expect(screen.getAllByText("Base season, who wins").length).toBeGreaterThan(0);
+    expect(screen.queryByRole("link", { name: /Open the feed/ })).toBeNull();
+    expect(screen.queryByRole("link", { name: /Open Square/ })).toBeNull();
+    expect(screen.queryByRole("link", { name: /Start a room/ })).toBeNull();
+    expect(useLiveConversations).not.toHaveBeenCalled();
   });
 });

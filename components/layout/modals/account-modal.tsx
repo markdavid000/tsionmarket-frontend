@@ -13,7 +13,9 @@ import { LanguageSelect } from "@/components/ui/language-select";
 // which mounts the whole Privy SDK. The row is light; the sheet it opens is
 // deferred below.
 import { MoveOldMoneyButton } from "@/features/migrate/components/move-old-money-entry";
-import { HelpIcon, LockIcon, PasskeyIcon, ShineIcon, SignOutIcon } from "@/components/ui/icons";
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// The import was: { HelpIcon, LockIcon, PasskeyIcon, ShineIcon, SignOutIcon }.
+import { HelpIcon, LockIcon, PasskeyIcon, SignOutIcon } from "@/components/ui/icons";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { useDisplayName } from "@/hooks/use-display-name";
 import { useDevicePasskey } from "@/hooks/use-device-passkey";
@@ -21,8 +23,9 @@ import { useUnlockPassword } from "@/hooks/use-unlock-password";
 
 interface AccountModalProps {
   onClose: () => void;
-  /** Opens the Shine sheet. Hosted by the shell, so it outlives this modal. */
-  onOpenShine: () => void;
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // Opens the Shine sheet. Hosted by the shell, so it outlives this modal.
+  // onOpenShine: () => void;
 }
 
 function InviteIcon({ size = 20 }: { size?: number }) {
@@ -45,7 +48,9 @@ function InviteIcon({ size = 20 }: { size?: number }) {
   );
 }
 
-export function AccountModal({ onClose, onOpenShine }: AccountModalProps) {
+// Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+// The props were: { onClose, onOpenShine }.
+export function AccountModal({ onClose }: AccountModalProps) {
   const t = useTranslations("account");
   const tLanguage = useTranslations("language");
   const { profile, logout } = useAuthSession();
@@ -147,8 +152,9 @@ export function AccountModal({ onClose, onOpenShine }: AccountModalProps) {
             </span>
           </button>
         ) : null}
-        {/* Shine, the same single home the desktop account menu offers. The
-            phone had no way to reach it at all. */}
+        {/* Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+            Shine, the same single home the desktop account menu offers. The
+            phone had no way to reach it at all.
         <button
           onClick={() => {
             onClose();
@@ -159,6 +165,7 @@ export function AccountModal({ onClose, onOpenShine }: AccountModalProps) {
           <ShineIcon size={20} />
           {t("shine")}
         </button>
+        */}
         {/* The in-app chat, as on the desktop menu. This used to only close
             the sheet, which read as a button that did nothing. */}
         <button

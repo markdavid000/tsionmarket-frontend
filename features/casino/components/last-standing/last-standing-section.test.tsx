@@ -746,15 +746,17 @@ function railOrder(): RailKind[] {
 }
 
 describe("LastStandingSection rail slides by state", () => {
-  it("offers play, invite and broadcast while a round runs", () => {
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // The broadcast card is hidden, so a live round offers play and invite only.
+  it("offers play and invite while a round runs, and no broadcast", () => {
     renderSection();
-    expect(railOrder()).toEqual(["action", "invite", "broadcast"]);
+    expect(railOrder()).toEqual(["action", "invite"]);
   });
 
   it("offers a live round's slides even to a wallet owed a payout elsewhere", () => {
     world.pending = [{ token: ZERO, raw: 580000n, amount: { decimals: 6 } }];
     renderSection();
-    expect(railOrder()).toEqual(["action", "invite", "broadcast"]);
+    expect(railOrder()).toEqual(["action", "invite"]);
   });
 
   it("opens an ended round on claim for the winner, then invite, and no broadcast", () => {
@@ -780,12 +782,14 @@ describe("LastStandingSection rail slides by state", () => {
     expect(screen.queryAllByRole("button", { name: /Go to card/u })).toHaveLength(0);
   });
 
-  it("keeps the broadcast after the round ends while this session is still streaming", () => {
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  // A streaming phase no longer brings the card back once the round is over.
+  it("offers no broadcast after the round ends, even with a stream phase reported", () => {
     world.game = makeGame({ active: false, settled: true });
     world.broadcastPhase = "live";
     renderSection();
 
-    expect(railOrder()).toEqual(["invite", "broadcast"]);
+    expect(railOrder()).toEqual(["invite"]);
   });
 
   it("moves to claim when the round ends under a player who had paged away", () => {
@@ -806,25 +810,24 @@ describe("LastStandingSection rail slides by state", () => {
   it("draws the pager inside the card that is showing", () => {
     renderSection();
 
+    // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+    // Two cards on a live round now that the broadcast card is hidden.
     const action = railCard("action")!;
-    expect(within(action).getAllByRole("button", { name: /Go to card/u })).toHaveLength(3);
+    expect(within(action).getAllByRole("button", { name: /Go to card/u })).toHaveLength(2);
 
-    const broadcast = openRailCard("broadcast");
-    // The broadcast slide's marker sits inside the shared frame, so the dots
-    // are its frame's, not the marker's.
-    const frame = broadcast.closest("section") ?? broadcast.parentElement!;
-    expect(within(frame).getAllByRole("button", { name: /Go to card/u })).toHaveLength(3);
+    const invite = openRailCard("invite");
+    const frame = invite.closest("section") ?? invite.parentElement!;
+    expect(within(frame).getAllByRole("button", { name: /Go to card/u })).toHaveLength(2);
   });
 
-  it("renders the broadcast only as a rail slide, bare, never as a card under the rail", () => {
+  // Market Square hidden: see docs/adr/ADR-2026-10-23-hide-market-square.md.
+  it("renders no broadcast panel, neither as a rail slide nor under the rail", () => {
     renderSection();
 
     expect(screen.queryByTestId("go-live")).toBeNull();
-    const slide = openRailCard("broadcast");
-    const panel = within(slide).getByTestId("go-live");
-    expect(panel).toHaveAttribute("data-variant", "bare");
-    expect(within(panel).getByText(ls.railBroadcastHeading)).toBeInTheDocument();
-    expect(screen.getAllByTestId("go-live")).toHaveLength(1);
+    expect(railOrder()).not.toContain("broadcast");
+    expect(railCard("broadcast")).toBeNull();
+    expect(screen.queryByText(ls.railBroadcastHeading)).toBeNull();
   });
 });
 
